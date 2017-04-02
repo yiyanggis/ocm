@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
+    <!--
+      Notice the use of %PUBLIC_URL% in the tag above.
+      It will be replaced with the URL of the `public` folder during the build.
+      Only files inside the `public` folder can be referenced from the HTML.
+
+      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
+      work correctly both with client-side routing and a non-root public URL.
+      Learn how to configure a non-root public URL by running `npm run build`.
+    -->
+    <!-- Latest compiled and minified CSS -->
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css">
+      <!-- Optional theme -->
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap-theme.min.css">
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+       <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+      <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.9/leaflet.draw.css" />
+    <title>OpenBeta - Climbing data for the people</title>
+        <style>
+          html, body {
+            height: 100%;
+            }
+            #root {
+              height: 100% !important;
+              position: relative;
+              margin-left: 0;
+            }
+          .mapRoot {
+            position: absolute;
+            height: 100% !important;
+            min-height: 100%;
+            width: 100%;
+            top: 35px;
+          }
+          .navbar {
+             position: absolute;
+             margin-left: 0;
+             margin-bottom: 0;
+             width: 100%;
+             z-index: 1000;
+          }
+          .ReactModal__Overlay--after-open {
+            z-index: 2000;
+          }
+    </style>
+  </head>
+  <body >
+    <div id="root"></div>
+  </body>
+</html>
