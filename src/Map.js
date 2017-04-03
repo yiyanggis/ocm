@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import {marker, popup} from 'leaflet';
+import {marker, popup, divIcon, point} from 'leaflet';
 import { Map, TileLayer, LayersControl, ZoomControl, ScaleControl, GeoJSON, LayerGroup, Circle, FeatureGroup, CircleMarker} from 'react-leaflet';
 import { EditControl } from "react-leaflet-draw";
+import MarkerClusterGroup from 'react-leaflet-markercluster';
 import 'whatwg-fetch';
 import {observer} from 'mobx-react';
 
@@ -61,6 +62,20 @@ const defaultMarkerOptions = {
     zIndexOffset: 1000  
 };
 
+
+const markerIcon = divIcon({html: 'hello :)'});
+
+// create custom icon based on the type of climb
+function makeIconFor(geoJsonFeature) {
+    const props = geoJsonFeature.properties;
+    if (props.grade.value !== undefined) {
+        return divIcon({
+            html: '', 
+            className: 'custom-marker-icon', 
+            iconSize: [30, 30]});
+    }
+    return divIcon({html: ''})
+}
 
 
 class GeoJSONLayer extends Component {
@@ -125,11 +140,27 @@ const BoundaryHandler = (props) => (
         center={props.latlng} 
         color='white' 
         weight='3'
-        fillColor='orange' 
+        fillColor='#a9cce3' 
         fillOpacity='1' 
         radius={15} 
         onClick={props.clickHandler}/>
 );
+
+
+const markerclusterOptions = {
+    showCoverageOnHover: false,
+   // spiderfyDistanceMultiplier: 1,
+
+    // Setting custom icon for cluster group
+    // https://github.com/Leaflet/Leaflet.markercluster#customising-the-clustered-markers
+    iconCreateFunction: (cluster) => {
+      return divIcon({
+        html: `<span>${cluster.getChildCount()}</span>`,
+        className: 'custom-cluster-icon',
+        iconSize: point(40, 40, true)
+      });
+    },
+};
 
 
 export default class MainMap extends Component {
@@ -158,7 +189,19 @@ export default class MainMap extends Component {
         const backend = new Backend();
         const options = opts;
         backend.load(options, function(json){
-                that.setState({data: json.route});
+            const markers = json.route.features.map(
+                    function(feature) {
+                        const customIcon = makeIconFor(feature);
+                        const marker = {
+                            lat: feature.geometry.coordinates[1],
+                            lng: feature.geometry.coordinates[0],
+                            popup: feature.properties.name + ' ' + feature.properties.grade.value,
+                            options: {icon: customIcon}
+                        }
+                        return marker;
+                    });
+
+                that.setState({data: markers});
             }
             );
    }
@@ -176,15 +219,17 @@ export default class MainMap extends Component {
                 center={position} 
                 zoom={this.state.zoom} 
                 zoomControl={false}
+                maxZoom={22}
                 ref={m => { this.leafletMap = m; }}>
 
                 <ZoomControl position='topleft' />
                 <ScaleControl position='bottomleft'/>
                 <LayersControl position='topleft'>
-                    <LayersControl.BaseLayer name='OpenStreetMap'>
+                    <LayersControl.BaseLayer name='Satellite'>
                         <TileLayer
-                          attribution={osmAttribution}
-                          url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'/>
+                          attribution={mapboxAttribution}
+                          url={mapboxUrl}
+                          id='mapbox.satellite'/>
                     </LayersControl.BaseLayer>
                     <LayersControl.BaseLayer name='Outdoors'>
                         <TileLayer
@@ -195,14 +240,17 @@ export default class MainMap extends Component {
                     <LayersControl.BaseLayer checked name='Light'>
                         <TileLayer
                           attribution={mapboxAttribution}
-                          url={mapboxUrl}
-                          id='mapbox.light'/>
+                          url='https://api.mapbox.com/styles/v1/mapbox/light-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoidmlldGdvZXN3ZXN0IiwiYSI6ImNpbzljZnVwNTAzM2x2d2x6OTRpb3JjMmQifQ.rcxOnDEeY4McXKDamMLOlA'
+                          id='mapbox.light'
+                          />
                     </LayersControl.BaseLayer>
                     <LayersControl.Overlay checked name='Routes'>
                         <LayerGroup>
-                        {this.state.data.features !== undefined &&
-                            <GeoJSONLayer data={this.state.data} />
-                        }
+                            <MarkerClusterGroup
+                                markers={this.state.data}
+                                wrapperOptions={{enableDefaultStyle: true}} 
+                                options={markerclusterOptions}
+                            />
                             <Circle center={[37.0902,-95.7129]} color='green' fillColor='green' radius={1000} />
                         </LayerGroup>
                     </LayersControl.Overlay>

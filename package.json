@@ -1,5 +1,6 @@
 {
   "name": "ocm",
+  "homepage": "https://openbeta.io/demo",
   "version": "0.1.0",
   "private": true,
   "devDependencies": {
@@ -19,8 +20,9 @@
     "react-bootstrap": "^0.30.7",
     "react-dom": "^15.4.2",
     "react-fontawesome": "^1.5.0",
-    "react-leaflet": "^1.1.0",
+    "react-leaflet": "^1.1.4",
     "react-leaflet-draw": "^0.13.0",
+    "react-leaflet-markercluster": "^1.1.3",
     "react-modal": "^1.6.5",
     "react-scripts": "^0.9.5",
     "validatorjs": "^3.11.0",

@@ -6,7 +6,7 @@ var envModule;
 if (env === undefined) {
     envModule = 'dev';
 } else {
-    envModule= env;
+    envModule = env;
 }
 console.log('####### ENV=%s #######', envModule);
 export const CONFIG = require('./config/' + envModule).default;
