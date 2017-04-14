@@ -1,16 +1,19 @@
 import React, { Component } from 'react';
-import { Navbar, Nav, NavItem, NavDropdown} from 'react-bootstrap';
-import {UIState, CONFIG} from './DataStore';
-import {store} from './Map';
+import { Nav, NavItem} from 'react-bootstrap';
+
+import {store} from './DataStore';
 
 const FontAwesome = require('react-fontawesome');
 
 
 export default class NavToolbar extends Component {
+
+
     constructor(props) {
         super(props);
         this.onClick = this.onClick.bind(this);
     }
+
 
     onClick(e) {
         store.saveToBackend();

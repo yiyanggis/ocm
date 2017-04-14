@@ -41,6 +41,9 @@ const PropertiesEditor = observer(
                 show={this.props.store.uiState.modalShouldOpen}
                 keyboard={true}
             >
+                            <Modal.Header closeButton>
+                    <Modal.Title id="contained-modal-title-sm">Boundary</Modal.Title>
+                </Modal.Header>
                 <FormSelector event={event} closeFn={this.closeModal} layerId={layerId}/>
             </Modal>
         );
@@ -54,7 +57,6 @@ function FormSelector(props) {
         case UIState.BOUNDARY_TEXT_EDIT_INITIATED:
             return (
                 <Modal.Body>
-                    <h2>Boundary</h2>
                     <BoundaryForm closeFn={props.closeFn} targetId={props.layerId}/>
                 </Modal.Body>
                 );

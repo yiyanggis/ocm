@@ -1,21 +1,15 @@
 import React, { Component } from 'react';
 import {marker, popup, divIcon, point} from 'leaflet';
-import { Map, TileLayer, LayersControl, ZoomControl, ScaleControl, GeoJSON, LayerGroup, Circle, FeatureGroup, CircleMarker} from 'react-leaflet';
+import { Map, TileLayer, LayersControl, ZoomControl, ScaleControl, LayerGroup, Circle, Polygon, FeatureGroup, CircleMarker, Popup} from 'react-leaflet';
 import { EditControl } from "react-leaflet-draw";
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import 'whatwg-fetch';
 import {observer} from 'mobx-react';
 
-import Backend from './Backend';
-
-
-import {DataStore} from './DataStore';
+import {store} from './DataStore';
 import PropertiesEditor from './PropertiesEditor';
 
-export const store = new DataStore();
-window.store = store;
 
-const osmAttribution = '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>';
 const mapboxAttribution = 'Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, ' +
         'Imagery © <a href="http://mapbox.com">Mapbox</a>';
 
@@ -38,11 +32,14 @@ store.registerMarkerHandler((change) => {
 
             }
             break;
+
         case 'delete':
             console.log('Old value ', change.oldValue);
             break;
-    }
 
+        default:
+            console.log('Action unknown: ', action);
+    }
 });
 
 
@@ -63,48 +60,153 @@ const defaultMarkerOptions = {
 };
 
 
-const markerIcon = divIcon({html: 'hello :)'});
-
 // create custom icon based on the type of climb
 function makeIconFor(geoJsonFeature) {
     const props = geoJsonFeature.properties;
-    if (props.grade.value !== undefined) {
-        return divIcon({
+    return divIcon({
             html: '', 
             className: 'custom-marker-icon', 
             iconSize: [30, 30]});
+}
+
+
+const markerclusterOptions = {
+    showCoverageOnHover: false,
+   // spiderfyDistanceMultiplier: 1,
+
+    // Setting custom icon for cluster group
+    // https://github.com/Leaflet/Leaflet.markercluster#customising-the-clustered-markers
+    iconCreateFunction: (cluster) => {
+      return divIcon({
+        html: `<span>${cluster.getChildCount()}</span>`,
+        className: 'custom-cluster-icon',
+        iconSize: point(40, 40, true)
+      });
+    },
+};
+
+
+function grade_hack(tags) {
+    const regex = /^climbing\:grade\:.*$/;
+    const results = [];
+    for (var property in tags) {
+        if (regex.test(property)) {
+            results.push({[property]: tags  [property]});
+        }
     }
-    return divIcon({html: ''})
+    return results;
+}
+
+
+function url_hack(name, tags) {
+    if (tags === undefined) {
+        return name;
+    }
+    var url;
+    if (tags.website !== undefined) {
+        url = tags.website;
+    } else if (tags.url !== undefined) {
+        url = tags.url;
+    } else {
+        return name;
+    }
+    return '<a href="' + url + '" target="_new">' + name + '</a>';
+}
+
+
+function url_hack2(name, tags) {
+    if (tags === undefined) {
+        return name;
+    }
+    var url;
+    if (tags.website !== undefined) {
+        url = tags.website;
+    } else if (tags.url !== undefined) {
+        url = tags.url;
+    } else {
+        return name;
+    }
+    return <a href={url} target='_new'>{name}</a>;
+}
+
+
+class RouteClustersLayer extends Component {
+
+    render() {
+        console.log('RouteClustersLayer:render()', this.props.routeData);
+        if (this.props.routeData.features === undefined) {
+            return <LayerGroup />;
+        }
+
+        const markers = this.props.routeData.features.map(
+                function(feature) {
+                    const customIcon = makeIconFor(feature);
+                    var grade;
+                    if (feature.properties.grade !== undefined) {
+                        grade = feature.properties.grade.value;
+                    } else {
+                        grade = grade_hack(feature.properties.tags).map(item =>'<p>' + JSON.stringify(item) + '</p>');
+                    }
+
+                    const marker = {
+                        lat: feature.geometry.coordinates[1],
+                        lng: feature.geometry.coordinates[0],
+                        popup: 'Name: ' + url_hack(feature.properties.name, feature.properties.tags) + ' ' + grade,
+                        options: {icon: customIcon}
+                    }
+                    return marker;
+                });
+        return (
+                <LayerGroup>
+                    <MarkerClusterGroup
+                        markers={markers}
+                        wrapperOptions={{enableDefaultStyle: true}} 
+                        options={markerclusterOptions}
+                    />
+                </LayerGroup>
+                );
+    }
 }
 
 
 class GeoJSONLayer extends Component {
 
-    componentWillMount() {
-       // const geojsonLayer = this.geojsonLayer;
-      //  console.log(this.leafletElement);
-    }
-
     render() {
-        return(
-            <GeoJSON 
-                data={this.props.data}  
-                ref={m => { this.geojsonLayer = m; }}
-                pointToLayer={this.onPointToLayer}/>
-        );
-    }
-
-    onPointToLayer(feature, latlng) {
-        // customize icon here 
-        const m = marker(latlng,{});
-        const p = popup().setContent(`${feature.properties.name} ${feature.properties.grade.value}`);
-        m.bindPopup(p);
-        return m;
+        console.log('GeoJSONLayer.render()', this.props.data);
+        if (this.props.data.features !== undefined) {
+            var keyId = 0;
+            const polygons = this.props.data.features.map(function(feature) {
+                    const coordinates = feature.geometry.coordinates[0];
+                    const pts = coordinates.map(p => [p[1], p[0]]);
+                    return (<FeatureGroup key={keyId++}>
+                                <Polygon key={keyId++} color='purple' positions={pts} />
+                                <BoundaryHandleLayer2 key={keyId++} coordinates={pts} properties={feature.properties} />
+                            </FeatureGroup>
+                            );
+            });
+            return(<FeatureGroup>{polygons}</FeatureGroup>)
+        }
+        return <FeatureGroup />
     }
 }
 
 
+const BoundaryHandleLayer2 = class BoundaryHandleLayer extends Component {
+
+    render() {
+        const popupContent = url_hack2(this.props.properties.name, this.props.properties.tags);
+        return (<BoundaryHandler 
+                    key = {this.props.keyId}
+                    latlng = {this.props.coordinates[0]}
+                    popupContent = {popupContent} />);
+    }
+}
+
+
+//TODO: this handler is used by the drawing logic 
+// we need to consolidate it iwth BoundaryHandleLayer2 
 const BoundaryHandleLayer = observer(class BoundaryHandleLayer extends Component {
+
     constructor(props) {
         super(props);
         this.clickHandler = this.clickHandler.bind(this);
@@ -142,78 +244,43 @@ const BoundaryHandler = (props) => (
         weight='3'
         fillColor='#a9cce3' 
         fillOpacity='1' 
-        radius={15} 
-        onClick={props.clickHandler}/>
+        radius={15} >
+            <Popup><span>Area name: {props.popupContent}</span></Popup>
+    </CircleMarker>
+
 );
 
 
-const markerclusterOptions = {
-    showCoverageOnHover: false,
-   // spiderfyDistanceMultiplier: 1,
-
-    // Setting custom icon for cluster group
-    // https://github.com/Leaflet/Leaflet.markercluster#customising-the-clustered-markers
-    iconCreateFunction: (cluster) => {
-      return divIcon({
-        html: `<span>${cluster.getChildCount()}</span>`,
-        className: 'custom-cluster-icon',
-        iconSize: point(40, 40, true)
-      });
-    },
-};
 
 
 export default class MainMap extends Component {
-    constructor() {
-        super();
+
+
+    constructor(props) {
+        super(props);
+
         this.state = {
           lat: 37.0902,
           lng: -95.7129,
           zoom: 3,
-          data: {}
+          routeData: [],
+          boundaryData: [1]
         };
     }
+
 
     getMarkerStyle(feature, layer) {
         return defaultMarkerOptions;
     }
 
-    componentDidMount() {
-        const leafletMap = this.leafletMap.leafletElement;
-        const geojsonLayer = this.geojsonLayer;
-        
-        const opts = {center: [this.state.lat, this.state.lng], radius: 40000};
-        var latlng = opts.center[1] + ',' + opts.center[0];
-        var radius = opts.radius;
-        const that = this;
-        const backend = new Backend();
-        const options = opts;
-        backend.load(options, function(json){
-            const markers = json.route.features.map(
-                    function(feature) {
-                        const customIcon = makeIconFor(feature);
-                        const marker = {
-                            lat: feature.geometry.coordinates[1],
-                            lng: feature.geometry.coordinates[0],
-                            popup: feature.properties.name + ' ' + feature.properties.grade.value,
-                            options: {icon: customIcon}
-                        }
-                        return marker;
-                    });
-
-                that.setState({data: markers});
-            }
-            );
-   }
 
 
     render() {
         const position = [this.state.lat, this.state.lng];
-        const globalStore = store;
-        console.log("global store: " + store);
+
         return (
             <div className="mapRoot">
-            <PropertiesEditor store={globalStore}/>
+            <PropertiesEditor store={store}/>
             <Map 
                 style={{height:'100%'}} 
                 center={position} 
@@ -241,18 +308,13 @@ export default class MainMap extends Component {
                         <TileLayer
                           attribution={mapboxAttribution}
                           url='https://api.mapbox.com/styles/v1/mapbox/light-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoidmlldGdvZXN3ZXN0IiwiYSI6ImNpbzljZnVwNTAzM2x2d2x6OTRpb3JjMmQifQ.rcxOnDEeY4McXKDamMLOlA'
-                          id='mapbox.light'
-                          />
+                          id='mapbox.light'/>
                     </LayersControl.BaseLayer>
                     <LayersControl.Overlay checked name='Routes'>
-                        <LayerGroup>
-                            <MarkerClusterGroup
-                                markers={this.state.data}
-                                wrapperOptions={{enableDefaultStyle: true}} 
-                                options={markerclusterOptions}
-                            />
-                            <Circle center={[37.0902,-95.7129]} color='green' fillColor='green' radius={1000} />
-                        </LayerGroup>
+                        <RouteClustersLayer routeData={this.props.routeData} />
+                    </LayersControl.Overlay>
+                    <LayersControl.Overlay checked name='Areas'>
+                        <GeoJSONLayer data={this.props.boundaryData} />
                     </LayersControl.Overlay>
                     <LayersControl.Overlay checked name='Your edits'>
                         <LayerGroup>
@@ -321,22 +383,4 @@ function _onDeleted(e) {
             store.deleteObject(l._leaflet_id);
             });
     console.log('store ', store.store.entries())
-}
-
-function getGeoJson() {
-    return {
-      "type": "FeatureCollection",
-      "features": [
-        {
-          "type": "Feature",
-          "properties": {},
-          "geometry": {
-            "type": "Point",
-            "coordinates": [
-                -95.7129,
-                37.0902
-              ]}
-        }
-        ]
-    }
 }

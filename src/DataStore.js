@@ -3,22 +3,11 @@ import Backend from './Backend';
 
 useStrict(true);
 
-export const backend = new Backend();
-
-
-const INITIAL_GEO_PROPS = {
-    'marker': {
-        name: '',
-        grade: {
-            value: '',
-            type: ''
-        }
-    }
-}
-
 
 export const UIState = {
     INITIAL: "initial",
+    DATA_LOAD_INITIATED: "data-load-initiated",
+    DATA_LOAD_COMPLETED: "data-load-completed",
     ROUTE_TEXT_EDIT_INITIATED: "route-text-edit-initiated",
     ROUTE_TEXT_EDIT_STARTED: "route-text-edit-started",
     ROUTE_TEXT_EDIT_COMPLETED: "route-text-edit-completed",
@@ -116,6 +105,20 @@ const state = {
 
     wantSubmitData: action(function(target) {
         console.log("wantSubmitData() ");
+    }),
+
+    initiateDataLoad: action(function(){
+        console.log('initiateDataLoad() current state', this.event);
+        if (this.event !== UIState.DATA_LOAD_INITIATED) {
+            this.event = UIState.DATA_LOAD_INITIATED;
+        }
+    }),
+
+    completeDataLoad: action(function(){
+        console.log('completeDataLoad() currentState', this.event);
+        if (this.event === UIState.DATA_LOAD_INITIATED) {
+            this.event = UIState.DATA_LOAD_COMPLETED;
+        }
     })
 }
 
@@ -134,11 +137,12 @@ export class EditableObject {
 }
 
 export class DataStore {
-	uiState = observable(state);
-	store = observable.map();
+    uiState = observable(state);
+    store = observable.map();
+    backend = new Backend();
 
-	
-	addObject(layer, type) {
+
+    addObject(layer, type) {
         console.log("addObject() id=%s, type=%s", layer._leaflet_id, type); 
         this.store.set(layer._leaflet_id, new EditableObject(layer, type, null));
     }
@@ -175,7 +179,7 @@ export class DataStore {
                 'features': features
             });
             console.log(geojsons);
-            backend.save(geojsons, {
+            this.backend.save(geojsons, {
                 okHandler: function(response) {
                             console.log('DataStore.saveToBackend() ', response);
                             },
@@ -188,3 +192,6 @@ export class DataStore {
         }
     }
 }
+
+export const store = new DataStore();
+window.store = store;

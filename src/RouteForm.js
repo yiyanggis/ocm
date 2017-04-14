@@ -31,37 +31,7 @@ const rules = {
   name: 'required|string|between:2,50',
   grade: ['required','regex:/^5\\.(([0-9]|1[0-5])[\\+\\-]?|1[0-6][abcd])$/']
 };
-/*
-const fields = {
-    name: {
-        label: 'Name',
-        placeholder: 'Enter a name',
-        rules: 'required|string|between:2,50'
-    },
-    grade: {
-            label: 'Grade',
-            placeholder: 'Enter a value',
-            rules: 'required|string|between:1,10'
-    },
-    gradeType: {
-        label: 'Grade System',
-        options: [
-        {
-            name: '-- Select a type --',
-            key: 'undefined'
 
-        },
-        {
-            name: 'Yosemite Decimal System',
-            key:'yds'
-        },
-        {
-            name: 'French', 
-            key:'french'}
-        ],
-    }
-}
-*/
 
 class FormHandler extends MobxReactForm {
 

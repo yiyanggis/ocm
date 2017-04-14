@@ -1,19 +1,11 @@
-import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import MainMap from './Map'
-import MyNavbar from './nav'
+import React from 'react';
 
+import './index.css';
+import TheApp from './TheApp'
 
 
 ReactDOM.render(
-	<div>
-		<div className="navBar">
-			<MyNavbar/>
-		</div>
-		<div >
-			<MainMap/>
-		</div>
-	</div>,
-  document.getElementById('root')
+    <TheApp/>,
+    document.getElementById('root')
 );

@@ -5,12 +5,16 @@ import FontAwesome from 'react-fontawesome';
 import MobxReactForm from 'mobx-react-form';
 import validatorjs from 'validatorjs';
 
-import {store} from './Map';
+import {store} from './DataStore';
 
 
 const plugins = { dvr: validatorjs };
 
 const fields = ['id', 'name', 'topLevel'];
+
+const rules = {
+  name: 'required|string|between:2,50'
+}
 
 
 class FormHandler extends MobxReactForm {
@@ -38,8 +42,8 @@ const FormWidget = observer(({ form, closeFn }) => (
             <HelpBlock>{form.$('name').error}</HelpBlock>
         </FormGroup>    
 
-        <FormGroup controlId={form.$('topLevel').id}  validationState={form.$('topLevel').isValid ? 'success' : 'error'}>
-            <ControlLabel>{form.$('topLevel').label}</ControlLabel>
+        <FormGroup controlId={form.$('topLevel').id}>
+            <ControlLabel>Top Level?</ControlLabel>
             <Checkbox {...form.$('topLevel').bind()} checked={form.$('topLevel').value}>Check box if this boundary defines the climbing area
             </Checkbox>
             <FormControl.Feedback />
@@ -68,7 +72,7 @@ const FormWidget = observer(({ form, closeFn }) => (
 export default class BoundaryForm extends Component {
     render() {
         const values = loadGeoJsonPropsFromStore(this.props.targetId);
-        const formHandler = new FormHandler({ fields, values }, { plugins });
+        const formHandler = new FormHandler({ fields, rules, values }, { plugins });
         return (
             <FormWidget form={ formHandler } closeFn={this.props.closeFn}/>
         );
