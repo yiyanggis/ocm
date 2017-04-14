@@ -18,17 +18,34 @@ export default class TheApp extends Component {
             zoom: 3,
             routeData: {features: []},
             boundaryData: {features: []},
+            error:{
+                code: 200,
+                msg: ''
+            }
         }
 
         //TODO: Hard-coded map center for now.  In the future the value
         // will be provided by the 'Search' component
-        const options = {center: [this.state.lat, this.state.lng], radius: 40000};
+        const options = {center: [this.state.lat, this.state.lng], radius: 40000, okHandler: this.okHandler, errorHandler: this.errorHandler};
         const that = this;
-        store.backend.load(options, function(backendData){
-            that.setState({
+        store.backend.load(options);
+    }
+
+    okHandler = (backendData) => {
+        console.log(backendData);
+        this.setState({
                 routeData: backendData.route,
-                boundaryData: backendData.boundary
-            });
+                boundaryData: backendData.boundary,
+                error: {code: 200}
+        });
+    }
+
+    errorHandler = (response) => {
+        this.setState({
+            error: {
+                code: response.status,
+                msg: response.statusText
+            }
         });
     }
 
@@ -47,10 +64,11 @@ export default class TheApp extends Component {
                     <MyNavbar/>
                 </div>
                 <div >
-                    <WelcomeModal uiState={store.uiState.currentState} count={objectCount}/>
+                    <WelcomeModal uiState={store.uiState.currentState} count={objectCount} error={this.state.error}/>
                     <MainMap routeData={this.state.routeData} boundaryData={this.state.boundaryData} />
                 </div>
             </div>
     );
     }
 }
+

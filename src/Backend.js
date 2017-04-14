@@ -23,7 +23,7 @@ export default class Backend {
     /**
      * Load data from the backend
      */
-    load(options, callbackFn)  {
+    load(options={okHandler: function(e) {}, errorHandler: function(e){}})  {
         store.uiState.initiateDataLoad();
 
         const latlng = options.center[1] + ',' + options.center[0];
@@ -33,12 +33,17 @@ export default class Backend {
 
         fetch(api_url)
             .then(function(response) {
-                return response.json()
+                if (response.status !== 200) {
+                    store.uiState.completeDataLoad();
+                    options.errorHandler(response);
+                } else {
+                    return response.json();
+                }
             })
             .then(function(json) {
                 store.uiState.completeDataLoad();
                 console.log("Raw data loaded from backend", json);
-                callbackFn(json);
+                options.okHandler(json);
             })
             .catch(function(ex) {
                 store.uiState.completeDataLoad();
@@ -66,7 +71,7 @@ export default class Backend {
                 opts.okHandler(response.json);
                 return response;
             } else {
-                opts.errorHandler(response.statusText);
+                opts.errorHandler(response);
             }
         }).catch(function(ex) {
             console.log('Backend.load() failed', ex);
