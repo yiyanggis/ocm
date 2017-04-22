@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
-import {marker, popup, divIcon, point} from 'leaflet';
-import { Map, TileLayer, LayersControl, ZoomControl, ScaleControl, LayerGroup, Circle, Polygon, FeatureGroup, CircleMarker, Popup} from 'react-leaflet';
+import {divIcon, point} from 'leaflet';
+import {Map, TileLayer, LayersControl, ZoomControl, ScaleControl, LayerGroup, Polygon, FeatureGroup, CircleMarker, Popup} from 'react-leaflet';
 import { EditControl } from "react-leaflet-draw";
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import 'whatwg-fetch';
 import {observer} from 'mobx-react';
 
+import Radar from './map/Radar';
 import {store} from './DataStore';
 import PropertiesEditor from './PropertiesEditor';
 
@@ -62,7 +63,6 @@ const defaultMarkerOptions = {
 
 // create custom icon based on the type of climb
 function makeIconFor(geoJsonFeature) {
-    const props = geoJsonFeature.properties;
     return divIcon({
             html: '', 
             className: 'custom-marker-icon', 
@@ -87,11 +87,11 @@ const markerclusterOptions = {
 
 
 function grade_hack(tags) {
-    const regex = /^climbing\:grade\:.*$/;
+    const regex = /^climbing:grade:.*$/;
     const results = [];
     for (var property in tags) {
         if (regex.test(property)) {
-            results.push({[property]: tags  [property]});
+            results.push({[property]: tags[property]});
         }
     }
     return results;
@@ -196,9 +196,9 @@ const BoundaryHandleLayer2 = class BoundaryHandleLayer extends Component {
     render() {
         const popupContent = url_hack2(this.props.properties.name, this.props.properties.tags);
         return (<BoundaryHandler 
-                    key = {this.props.keyId}
-                    latlng = {this.props.coordinates[0]}
-                    popupContent = {popupContent} />);
+                    key={this.props.keyId}
+                    latlng={this.props.coordinates[0]}
+                    popupContent={popupContent} />);
     }
 }
 
@@ -255,7 +255,6 @@ const BoundaryHandler = (props) => (
 
 export default class MainMap extends Component {
 
-
     constructor(props) {
         super(props);
 
@@ -274,20 +273,32 @@ export default class MainMap extends Component {
     }
 
 
+    componentDidMount() {
+
+    }
+
+    getBounds = () => {
+        const leaflet = this.refs.leafletMap.leafletElement;
+        console.log('leaflet ref', leaflet);
+        if (leaflet !== undefined) {
+            leaflet.fitBounds(this.props.bbox);
+        }
+    }
 
     render() {
-        const position = [this.state.lat, this.state.lng];
-
         return (
             <div className="mapRoot">
             <PropertiesEditor store={store}/>
             <Map 
                 style={{height:'100%'}} 
-                center={position} 
+                center={this.props.center}
+                bounds={this.props.bbox}
                 zoom={this.state.zoom} 
-                zoomControl={false}
+                zoomControl={true}
                 maxZoom={22}
-                ref={m => { this.leafletMap = m; }}>
+                onZoomEnd={(e) => { 
+                    this.setState({zoom: e.target._zoom});}}> 
+                ref="leafletMap">
 
                 <ZoomControl position='topleft' />
                 <ScaleControl position='bottomleft'/>
@@ -310,6 +321,9 @@ export default class MainMap extends Component {
                           url='https://api.mapbox.com/styles/v1/mapbox/light-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoidmlldGdvZXN3ZXN0IiwiYSI6ImNpbzljZnVwNTAzM2x2d2x6OTRpb3JjMmQifQ.rcxOnDEeY4McXKDamMLOlA'
                           id='mapbox.light'/>
                     </LayersControl.BaseLayer>
+
+                    <Radar zoomLevel={this.state.zoom} center={this.props.center} radius={this.props.radius} />         
+                
                     <LayersControl.Overlay checked name='Routes'>
                         <RouteClustersLayer routeData={this.props.routeData} />
                     </LayersControl.Overlay>

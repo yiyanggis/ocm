@@ -1,19 +1,20 @@
 import React, { Component } from 'react';
-import { Navbar, Nav} from 'react-bootstrap';
+import { Navbar, Nav, Image} from 'react-bootstrap';
 
-import NavToolbar from './NavToolbar';
+import logo from './logo64x64.png';
 
 export default class MyNavbar extends Component {
   render() {
   return(
-      <Navbar inverse collapseOnSelect>
+      <Navbar collapseOnSelect>
         <Navbar.Header>
           <Navbar.Brand>
+            <Image src={logo} />
           </Navbar.Brand>
           <Navbar.Toggle />
         </Navbar.Header>
         <Navbar.Collapse>
-          <NavToolbar/>
+          {this.props.children}
           <Nav pullRight>
             <Navbar.Text>
               <Navbar.Link href="https://openbeta.io">About</Navbar.Link>

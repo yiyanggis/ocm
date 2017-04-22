@@ -13,3 +13,29 @@ body {
     height: 50%;
     opacity: 0.9;
 }
+
+.search-radius-component {
+    width: 500px;
+}
+
+#search-radius-popover {
+    padding: 15px;
+}
+
+.search-radius-popover-value{
+    padding: 15px;
+    color: black;
+}
+
+.radar-ring {
+    border-style: dotted;
+    -webkit-border-radius: 30px;
+    -webkit-animation: pulsate 1s ease-out;
+    -webkit-animation-iteration-count: infinite; 
+}
+
+-webkit-keyframes pulsate {
+        0% {-webkit-transform: scale(0.1, 0.1); opacity: 0.0;}
+        50% {opacity: 1.0;}
+        100% {-webkit-transform: scale(1.2, 1.2); opacity: 0.0;}
+}

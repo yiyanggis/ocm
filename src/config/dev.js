@@ -1,6 +1,6 @@
 const CONFIG = {
 	api_server_url: 'http://localhost:5000',
-	api_key: 'MDQwYWNkOTc5YTQ5OWE5YmZjMGNiNTkxZjhlMzdkMTY2NGVmZWQzYjA2YmZmMzQ1ZmNiNmIwNDY3OWI0YjhmZQ==.-ymSxaGNyywz0YuDM0V1oYRgA7Y',
+	api_key: 'NGMzOTE2NzdkOGJjNjVjYjIyMTBjNjhjNThjM2RkYjE0NzM0NTBmZjhmNDQ5Zjk2YmU5NjBmMmZkYmIwM2JlOQ==.OY4xKpzNlVghqsxxrThjGERcgso',
 }
 
 export default CONFIG;

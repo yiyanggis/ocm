@@ -22,13 +22,19 @@ export default class Backend {
 
     /**
      * Load data from the backend
+     * query options {
+     *  center: [lat, lng],    
+     *  radius: r in meters,
+     *  okHandler: f(FeatureSet) { do something with the data},
+     *  errorHandler: f(http response) { do semething about the error}
+     * } 
      */
     load(options={okHandler: function(e) {}, errorHandler: function(e){}})  {
         store.uiState.initiateDataLoad();
 
-        const latlng = options.center[1] + ',' + options.center[0];
+        const latlng = options.center[0] + ',' + options.center[1];
         const radius = options.radius;
-
+        console.log('Attempting to load data for ', latlng, radius);
         const api_url = this.apiServer + '/featureset?api_key=' + this.apiKey + '&latlng=' + latlng + '&r=' + radius;
 
         fetch(api_url)
