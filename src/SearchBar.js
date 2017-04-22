@@ -43,7 +43,10 @@ export default class SearchBar extends Component {
                             onSuggest={this.onSuggest}
                             defaultInputValue={this.props.initialSearch}
                             showLoader={false}
-                            focusOnMount={true}/>
+                            focusOnMount={true}
+                            resultsClass='searchBar-results'
+                            resultFocusClass='searchBar-resultFocusClass'
+                            />
                         <SearchRadius initialRadius={this.state.radius} onUpdateRadius={this.onUpdateRadius} />
                     </FormGroup>
                 </Navbar.Form>);
