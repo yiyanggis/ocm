@@ -2,10 +2,13 @@ import React, { Component } from 'react';
 import * as turfBuffer from '@turf/buffer';
 import turfHelpers from '@turf/helpers';
 import * as turfBbox from '@turf/bbox';
+import {observer} from 'mobx-react';
 
 import MainMap from './Map';
 import MyNavbar from './nav';
 import SearchBar from './SearchBar';
+import WIP from './edit/WIP';
+
 
 import {store} from './DataStore';
 
@@ -94,14 +97,12 @@ export default class TheApp extends Component {
         const {center, bbox, ...theRest} = this.state;
         return (
             <div>
-                <div className="navBar">
-                    <MyNavbar>
-                        <SearchBar initialSearch="" updateMapCenter={this.updateMapCenter}/>
-                    </MyNavbar>
-                </div>
-                <div>
-                    <MainMap center={lngLatFlip(center)} bbox={bboxFlip(bbox)} {...theRest} />
-                </div>
+                <MyNavbar>
+                    <SearchBar initialSearch="" updateMapCenter={this.updateMapCenter}/>
+                </MyNavbar>
+                <WIP/>
+                <MainMap center={lngLatFlip(center)} bbox={bboxFlip(bbox)} {...theRest} />
             </div>
+
     );} // render()
 }

@@ -294,7 +294,7 @@ export default class MainMap extends Component {
                 center={this.props.center}
                 bounds={this.props.bbox}
                 zoom={this.state.zoom} 
-                zoomControl={true}
+                zoomControl={false}
                 maxZoom={22}
                 onZoomEnd={(e) => { 
                     this.setState({zoom: e.target._zoom});}}> 

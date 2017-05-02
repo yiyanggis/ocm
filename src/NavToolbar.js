@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { Nav, NavItem} from 'react-bootstrap';
+import { Nav, NavItem, Label, Badge} from 'react-bootstrap';
+import {observer} from 'mobx-react';
 
 import {store} from './DataStore';
 
@@ -9,29 +10,39 @@ const FontAwesome = require('react-fontawesome');
 export default class NavToolbar extends Component {
 
 
-    constructor(props) {
-        super(props);
-        this.onClick = this.onClick.bind(this);
-    }
-
-
-    onClick(e) {
-        store.saveToBackend();
+    onClick = (e) => {
+        console.log(e);
+        switch (e) {
+            case 1: 
+                store.uiState.wantOpenBoundaryTextEditor(undefined);
+                break;
+            case 3:
+                store.uiState.wantOpenWIPView();
+                break;
+        }
+       // store.saveToBackend();
     }
 
 
     render() {
+        //const wipIcon = wipIconComponent;
         return (
           <Nav onSelect={this.onClick}>
             <NavItem eventKey={1} href="#">
-              <FontAwesome name='plus-circle'/>
+              <Label bsStyle='primary'><FontAwesome name='plus-circle' size='2x'/> Add </Label>  
             </NavItem>
-            <NavItem eventKey={2} href="#">
-              <FontAwesome name='refresh'/>
-            </NavItem>
-            <NavItem eventKey={3} href="#">
-              <FontAwesome name='upload'/>
+            <NavItem eventKey={3}>
+                <WIPIconComponent/>
             </NavItem>
           </Nav>);
       }
 }
+
+
+const WIPIconComponent = observer(() => {
+    const count = store.wip.map.size;
+    const props = {
+        bsStyle: count > 0 ? 'warning' : 'default'
+    };
+    return (<span><Label {...props}><FontAwesome name='code-fork' size='2x'/> <Badge>{count}</Badge></Label></span>);
+});

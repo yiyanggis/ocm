@@ -21,6 +21,7 @@
     "mobx": "^3.1.0",
     "mobx-react": "^4.1.0",
     "mobx-react-form": "^1.19.0",
+    "osm-auth": "^1.0.1",
     "rc-slider": "^7.0.1",
     "react": "^15.4.2",
     "react-bootstrap": "^0.30.8",

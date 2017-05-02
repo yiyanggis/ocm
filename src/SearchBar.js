@@ -47,8 +47,9 @@ export default class SearchBar extends Component {
                             resultsClass='searchBar-results'
                             resultFocusClass='searchBar-resultFocusClass'
                             />
-                        <SearchRadius initialRadius={this.state.radius} onUpdateRadius={this.onUpdateRadius} />
                     </FormGroup>
+                                            <SearchRadius initialRadius={this.state.radius} onUpdateRadius={this.onUpdateRadius} />
+
                 </Navbar.Form>);
 
     }

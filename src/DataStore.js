@@ -1,4 +1,5 @@
-import {useStrict, observable, action} from 'mobx';
+import {useStrict, observable, action, computed} from 'mobx';
+
 import Backend from './Backend';
 
 useStrict(true);
@@ -11,6 +12,8 @@ export const UIState = {
     ROUTE_TEXT_EDIT_INITIATED: "route-text-edit-initiated",
     ROUTE_TEXT_EDIT_STARTED: "route-text-edit-started",
     ROUTE_TEXT_EDIT_COMPLETED: "route-text-edit-completed",
+    WORK_IN_PROGRESS_VIEW_INITIATED: "work-in-progress-view-initiated",
+    WORK_IN_PROGRESS_VIEW_COMPLETED: "work-in-progress-view-completed",
     BOUNDARY_TEXT_EDIT_INITIATED: "boundary-text-edit-initiated",
     BOUNDARY_TEXT_EDIT_STARTED: "boundary-text-edit-started",
     BOUNDARY_TEXT_EDIT_COMPLETED: "boundary-text-edit-completed",
@@ -44,82 +47,98 @@ export class Marker {
 	}
 }
 
-const state = {
-    event: UIState.INITIAL,
-    target: 0,
-    modalShouldOpen: false,
 
-    get currentState() {
-        return this.event;
-    },
+class UIStateMachine  {
+    
+    constructor () {
+        this.event = observable.box(UIState.INITIAL);
+        this.target = observable(0);
+    }
 
 
-    wantOpenRouteTextEditor: action(function(_target) {
-        this.event = UIState.ROUTE_TEXT_EDIT_INITIATED;
+    wantOpenRouteTextEditor = action(function(_target) {
+        this.event.set(UIState.ROUTE_TEXT_EDIT_INITIATED);
         this.target = _target;
-        this.modalShouldOpen = true;
-    }),
+    })
 
 
-    wantCloseRouteTextEditor: action(function(target){
-        this.event = UIState.INITIAL;
+    wantCloseRouteTextEditor = action(function(target){
+        this.event.set(UIState.INITIAL);
         this.target = target;
         this.modalShouldOpen = false;
-    }),
+    })
 
 
-    wantOpenBoundaryTextEditor: action(function(target){
-        this.event = UIState.BOUNDARY_TEXT_EDIT_INITIATED;
+    // Initiate adding or updating boundary
+    // target is the working item id, or 'undefined' when adding new
+    wantOpenBoundaryTextEditor = action((target) => {
+        this.event.set(UIState.BOUNDARY_TEXT_EDIT_INITIATED);
         this.target = target;
-        this.modalShouldOpen = true;
-    }),
+    })
 
-    wantBeginEdit: action(function(target){
-        switch(this.event) {
-            case UIState.BOUNDARY_TEXT_EDIT_INITIATED:
-                this.event = UIState.BOUNDARY_TEXT_EDIT_STARTED;
-                break;
-            case UIState.ROUTE_TEXT_EDIT_INITIATED:
-                this.event = UIState.ROUTE_TEXT_EDIT_STARTED;
-                break;
-            default:
-                console.log("wantBeginEdit() Unexpected state ", this.event);
-        }
-    }),
+    
+    wantOpenWIPView = action((target)=> {
+        this.event.set(UIState.WORK_IN_PROGRESS_VIEW_INITIATED);
+        this.target = target;
+    })
 
-    wantCloseBoundrayTextEditor: action(function(target){
-        this.event = UIState.INITIAL;
+
+    wantCloseWIPView = action(function(){
+        this.event.set(UIState.INITIAL);
+        this.target = undefined;
+    })
+
+
+    wantCloseBoundrayTextEditor = action(function(target){
+        this.event.set(UIState.INITIAL);
         this.target = target;
         this.modalShouldOpen = false;
-    }),
+    })
 
-    wantCloseCurrent: action(function(target){
-        console.log("wnatCloseCurrent() current state ", this.event);
-        if (this.event === UIState.ROUTE_TEXT_EDIT_INITIATED 
-            || this.event === UIState.BOUNDARY_TEXT_EDIT_INITIATED) {
-            this.event = UIState.INITIAL;
-            this.target = target;
-            this.modalShouldOpen = false;
-        }
-    }),
 
-    wantSubmitData: action(function(target) {
+    wantCloseCurrent = action((target) => {
+        console.log("wnatCloseCurrent() before ", this.event.get());
+        this.event.set(UIState.INITIAL);
+        console.log("wnatCloseCurrent() after  ", this.event.get());
+
+        this.target = target;
+        this.modalShouldOpen = false;
+    })
+
+
+    wantSubmitData = action(function(target) {
         console.log("wantSubmitData() ");
-    }),
+    })
 
-    initiateDataLoad: action(function(){
+
+    initiateDataLoad = action(function(){
         console.log('initiateDataLoad() current state', this.event);
-        if (this.event !== UIState.DATA_LOAD_INITIATED) {
-            this.event = UIState.DATA_LOAD_INITIATED;
-        }
-    }),
-
-    completeDataLoad: action(function(){
-        console.log('completeDataLoad() currentState', this.event);
-        if (this.event === UIState.DATA_LOAD_INITIATED) {
-            this.event = UIState.DATA_LOAD_COMPLETED;
+        if (this.event.get() !== UIState.DATA_LOAD_INITIATED) {
+            this.event.set(UIState.DATA_LOAD_INITIATED);
         }
     })
+
+
+    completeDataLoad = action(function(){
+        console.log('completeDataLoad() currentState', this.event);
+        if (this.event.get() === UIState.DATA_LOAD_INITIATED) {
+            this.event.set(UIState.DATA_LOAD_COMPLETED);
+        }
+    })
+
+
+    shouldEditorOpen = computed(() => {
+        console.log("shouldEditorOpen", this.event.get());    
+        return this.event.get() === UIState.BOUNDARY_TEXT_EDIT_INITIATED ||
+         this.event.get() === UIState.ROUTE_TEXT_EDIT_INITIATED;
+    })
+
+
+    shouldWIPOpen = computed(() => {
+        console.log('shouldWIPOpen', this.event.get());
+        console.log('target=', this.event.target);
+        return this.event.get() === UIState.WORK_IN_PROGRESS_VIEW_INITIATED;
+    })    
 }
 
 
@@ -136,9 +155,11 @@ export class EditableObject {
     }
 }
 
+
 export class DataStore {
-    uiState = observable(state);
+    uiState = new UIStateMachine();
     store = observable.map();
+    wip = new WorkInProgress();
     backend = new Backend();
 
 
@@ -193,5 +214,44 @@ export class DataStore {
     }
 }
 
+
+class WorkInProgress {
+
+    constructor() {
+        this.map = observable.shallowMap(); // Work-In-Progress items
+        this.id = 0;
+    }
+
+    nextId() {
+        this.id = this.id - 1;
+        return this.id;
+    }
+
+    // Add a new WIP item
+    addNew(item) {
+        const id = this.nextId();
+        this.map.set(id, item);
+        this.selectedId = id;
+        return id;
+    }
+
+
+    updateOrAdd(id, item) {
+        if (id === undefined) {
+            id = this.addNew(item);
+        } 
+        else {
+
+            this.map.set(id, item);
+        }
+        this.selectedId = id;
+        return id;
+    }
+
+   // workingItemId = () => (this.selectedId)
+}
+
+
 export const store = new DataStore();
 window.store = store;
+//window.wip = wip;

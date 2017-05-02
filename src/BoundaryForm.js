@@ -4,6 +4,8 @@ import {FormGroup, ControlLabel, FormControl, HelpBlock, Button, ButtonToolbar, 
 import FontAwesome from 'react-fontawesome';
 import MobxReactForm from 'mobx-react-form';
 import validatorjs from 'validatorjs';
+import turfHelpers from '@turf/helpers';
+
 
 import {store} from './DataStore';
 
@@ -19,10 +21,28 @@ const rules = {
 
 class FormHandler extends MobxReactForm {
 
-  onSuccess(form) {
-    console.log('Form Values!', form.values());
-    store.updateFeatureProps(form.values().id, toGeoJsonProps(form.values()))
-  }
+    onSuccess(form) {
+        console.log('Form Values!', form.values());
+        var feature;
+        var id;
+        if (form.values().id === 0) {
+            // create a new geojson feature with geometry=null
+            id = store.wip.nextId();
+            feature = {
+                type: 'Feature',
+                geometry: null,
+                properties: toGeoJsonProps(form.values()),
+            }
+        } else {
+            // only update 'properties' part of geojson
+            id = form.values().id;
+            feature = store.wip.map.get(id);
+            feature.properties = toGeoJsonProps(form.values());
+        }
+        form.$('id').set(id); 
+        console.log('feature', feature);
+        store.wip.updateOrAdd(id, feature);
+    }
 
   onError(form) {
     // get all form errors
@@ -71,7 +91,7 @@ const FormWidget = observer(({ form, closeFn }) => (
 
 export default class BoundaryForm extends Component {
     render() {
-        const values = loadGeoJsonPropsFromStore(this.props.targetId);
+        const values = loadGeoJsonPropsFromStore(this.props.itemId);
         const formHandler = new FormHandler({ fields, rules, values }, { plugins });
         return (
             <FormWidget form={ formHandler } closeFn={this.props.closeFn}/>
@@ -81,29 +101,38 @@ export default class BoundaryForm extends Component {
 
 
 function toGeoJsonProps(values) {
-    const props = {};
-    props.name = values.name;
-    props.topLevel = values.topLevel;
-    return props;
+    return {
+        name: values.name,
+        topLevel: values.topLevel
+    }
 } 
 
 
+const emptyEntry = {
+    id: 0,
+    name: "",
+    topLevel: false
+}
+
+
 function loadGeoJsonPropsFromStore(id) {
-    const feature = store.getFeature(id);
+    if (id === undefined) {
+        return emptyEntry;
+    }
+    const feature = store.wip.map.get(id);
     console.log("loading id->feature ", id, feature);
-    if (feature !== null) {
-        const props = feature.props;
-        if (props !== null) {
+
+    if (feature !== undefined) {
+        // Edit existing
+        const properties = feature.properties;
+        if (properties !== null) {
             return {
                 id: id,
-                name: props.name,
-                topLevel: props.topLevel,
+                name: properties.name,
+                topLevel: properties.topLevel,
             }
         }
     } 
-    return {
-        id: id,
-        name: "",
-        topLevel: false,
-    }
+    // oops not found - go ahead and add new
+    return emptyEntry;
 }

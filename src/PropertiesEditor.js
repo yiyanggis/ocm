@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {Modal} from 'react-bootstrap';
 import {observer} from 'mobx-react';
 
-import {UIState} from './DataStore';
+import {UIState, wip, store} from './DataStore';
 import RouteForm from './RouteForm';
 import BoundaryForm from './BoundaryForm';
 
@@ -25,26 +25,33 @@ const PropertiesEditor = observer(
 
     closeModal() {
         console.log("trying to close dialog");
-        this.props.store.uiState.wantCloseCurrent();
+        store.uiState.wantCloseCurrent();
     }
 
+
     afterOpenModal() {
-        //this.props.store.uiState.wantBeginEdit();
+    }
+
+    componentWillReact() {
+        console.log('Edit re-render');
     }
 
     render() {
-        const layerId = this.props.store.uiState.target;
-        const event = this.props.store.uiState.event;
-        console.log("PropertiesEditor render() ", event, layerId);
+        console.log('Editor', store.uiState.shouldEditorOpen.get());
+        if (!store.uiState.shouldEditorOpen.get()) {
+            return null;
+        }
+
+        console.log("PropertiesEditor render() target=", store.uiState.target);
         return (
             <Modal
-                show={this.props.store.uiState.modalShouldOpen}
+                show={true}
                 keyboard={true}
             >
-                            <Modal.Header closeButton>
+                    <Modal.Header closeButton>
                     <Modal.Title id="contained-modal-title-sm">Boundary</Modal.Title>
                 </Modal.Header>
-                <FormSelector event={event} closeFn={this.closeModal} layerId={layerId}/>
+                <FormSelector event={store.uiState.event.get()} closeFn={this.closeModal} itemId={store.uiState.target}/>
             </Modal>
         );
     }
@@ -57,14 +64,14 @@ function FormSelector(props) {
         case UIState.BOUNDARY_TEXT_EDIT_INITIATED:
             return (
                 <Modal.Body>
-                    <BoundaryForm closeFn={props.closeFn} targetId={props.layerId}/>
+                    <BoundaryForm closeFn={props.closeFn} itemId={props.itemId}/>
                 </Modal.Body>
                 );
         case UIState.ROUTE_TEXT_EDIT_INITIATED:
             return (
                 <Modal.Body>
                     <h2>Climb</h2>
-                    <RouteForm closeFn={props.closeFn} targetId={props.layerId}/>
+                    <RouteForm closeFn={props.closeFn} targetId={props.itemId}/>
                 </Modal.Body>
                 );
         default:
