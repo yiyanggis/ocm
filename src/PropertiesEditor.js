@@ -17,20 +17,14 @@ const PropertiesEditor = observer(
             targetId: -1,
             event: UIState.INITIAL
         };
-
-        this.afterOpenModal = this.afterOpenModal.bind(this);
-        this.closeModal = this.closeModal.bind(this);
     }
 
 
-    closeModal() {
+    closeModal = () => {
         console.log("trying to close dialog");
         store.uiState.wantCloseCurrent();
     }
 
-
-    afterOpenModal() {
-    }
 
     componentWillReact() {
         console.log('Edit re-render');
@@ -47,9 +41,10 @@ const PropertiesEditor = observer(
             <Modal
                 show={true}
                 keyboard={true}
+                onHide={this.closeModal}
             >
                     <Modal.Header closeButton>
-                    <Modal.Title id="contained-modal-title-sm">Boundary</Modal.Title>
+                    <Modal.Title id="contained-modal-title-sm">Area</Modal.Title>
                 </Modal.Header>
                 <FormSelector event={store.uiState.event.get()} closeFn={this.closeModal} itemId={store.uiState.target}/>
             </Modal>

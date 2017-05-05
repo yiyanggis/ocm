@@ -23,25 +23,10 @@ class FormHandler extends MobxReactForm {
 
     onSuccess(form) {
         console.log('Form Values!', form.values());
-        var feature;
-        var id;
-        if (form.values().id === 0) {
-            // create a new geojson feature with geometry=null
-            id = store.wip.nextId();
-            feature = {
-                type: 'Feature',
-                geometry: null,
-                properties: toGeoJsonProps(form.values()),
-            }
-        } else {
-            // only update 'properties' part of geojson
-            id = form.values().id;
-            feature = store.wip.map.get(id);
-            feature.properties = toGeoJsonProps(form.values());
+        const id=  store.wip.updateProperties(form.values().id, toGeoJsonProps(form.values()));
+        if (form.values().id !== id) {
+            form.$('id').set(id); 
         }
-        form.$('id').set(id); 
-        console.log('feature', feature);
-        store.wip.updateOrAdd(id, feature);
     }
 
   onError(form) {
@@ -56,7 +41,7 @@ class FormHandler extends MobxReactForm {
 const FormWidget = observer(({ form, closeFn }) => (
     <form>
         <FormGroup controlId={form.$('name').id}  validationState={form.$('name').isValid ? 'success' : 'error'}>
-            <ControlLabel>{form.$('name').label}</ControlLabel>
+            <ControlLabel>Name</ControlLabel>
             <FormControl {...form.$('name').bind()} />
             <FormControl.Feedback />
             <HelpBlock>{form.$('name').error}</HelpBlock>
@@ -119,7 +104,7 @@ function loadGeoJsonPropsFromStore(id) {
     if (id === undefined) {
         return emptyEntry;
     }
-    const feature = store.wip.map.get(id);
+    const feature = store.wip.get(id);
     console.log("loading id->feature ", id, feature);
 
     if (feature !== undefined) {

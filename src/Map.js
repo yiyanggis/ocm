@@ -9,6 +9,8 @@ import {observer} from 'mobx-react';
 import Radar from './map/Radar';
 import {store} from './DataStore';
 import PropertiesEditor from './PropertiesEditor';
+import MapEditTool from './edit/MapEditTool';
+import {AreaHandleManager, AreaClickableHandle} from './map/AreaHandleManager';
 
 
 const mapboxAttribution = 'Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, ' +
@@ -195,62 +197,12 @@ const BoundaryHandleLayer2 = class BoundaryHandleLayer extends Component {
 
     render() {
         const popupContent = url_hack2(this.props.properties.name, this.props.properties.tags);
-        return (<BoundaryHandler 
+        return (<AreaClickableHandle 
                     key={this.props.keyId}
                     latlng={this.props.coordinates[0]}
                     popupContent={popupContent} />);
     }
 }
-
-
-//TODO: this handler is used by the drawing logic 
-// we need to consolidate it iwth BoundaryHandleLayer2 
-const BoundaryHandleLayer = observer(class BoundaryHandleLayer extends Component {
-
-    constructor(props) {
-        super(props);
-        this.clickHandler = this.clickHandler.bind(this);
-    }
-
-
-    clickHandler(layerId) {
-        console.log('Boundary handler clicked ', layerId);
-        store.uiState.wantOpenBoundaryTextEditor(layerId);
-    }
-
-
-    render() {
-        const polygons = store.store.values().filter(v => v.type === 'polygon');
-        console.log("BoundaryHandleLayer ", polygons);
-        return (
-            <LayerGroup>
-                {   
-                  polygons.map(v =>
-                   <BoundaryHandler 
-                        key={v.layer._leaflet_id} 
-                        latlng={v.layer._latlngs[0][0]}
-                        clickHandler={this.clickHandler.bind(this, v.layer._leaflet_id)}/>)
-                }
-            </LayerGroup>
-            );
-    }
-});
-
-
-const BoundaryHandler = (props) => (
-    <CircleMarker
-        center={props.latlng} 
-        color='white' 
-        weight='3'
-        fillColor='#a9cce3' 
-        fillOpacity='1' 
-        radius={15} >
-            <Popup><span>Area name: {props.popupContent}</span></Popup>
-    </CircleMarker>
-
-);
-
-
 
 
 export default class MainMap extends Component {
@@ -332,30 +284,8 @@ export default class MainMap extends Component {
                     </LayersControl.Overlay>
                     <LayersControl.Overlay checked name='Your edits'>
                         <LayerGroup>
-                            <FeatureGroup>
-                                <EditControl
-                                  position='topleft'
-                                  onEdited={this._onEditPath}
-                                  onCreated={_onCreate}
-                                  onDeleted={_onDeleted}
-                                  onDeleteStop={_onDeleteStop}
-                                  draw={{
-                                    rectangle: false,
-                                    circle: false,
-                                    polygon: {
-                                     shapeOptions: {
-                                        color: '#8B4513',
-                                        weight: 2,
-                                        fillColor: '#778899',
-                                        fillOpacity: 0.08,
-                                        clickable: false,
-                                        lineJoin: 'round'
-                                        }
-                                    }
-                                  }}
-                                />
-                            </FeatureGroup>
-                            <BoundaryHandleLayer />
+                            <AreaHandleManager/>
+                            <MapEditTool/>
                         </LayerGroup>
                     </LayersControl.Overlay>
                 </LayersControl>

@@ -17,7 +17,8 @@ export const UIState = {
     BOUNDARY_TEXT_EDIT_INITIATED: "boundary-text-edit-initiated",
     BOUNDARY_TEXT_EDIT_STARTED: "boundary-text-edit-started",
     BOUNDARY_TEXT_EDIT_COMPLETED: "boundary-text-edit-completed",
-
+    BOUNDARY_DRAW_MODE_INITIATED: "boundary-draw-mode-initiated",
+    BOUNDARY_DRAW_MODE_COMPLETED: "boundary-draw-mode-completed"
 }
 
 
@@ -52,7 +53,7 @@ class UIStateMachine  {
     
     constructor () {
         this.event = observable.box(UIState.INITIAL);
-        this.target = observable(0);
+        this.target = 0;
     }
 
 
@@ -65,7 +66,12 @@ class UIStateMachine  {
     wantCloseRouteTextEditor = action(function(target){
         this.event.set(UIState.INITIAL);
         this.target = target;
-        this.modalShouldOpen = false;
+    })
+
+    
+    wantBeginBoundaryDrawing = action((target) => {
+        this.event.set(UIState.BOUNDARY_DRAW_MODE_INITIATED);
+        this.target = target;
     })
 
 
@@ -85,14 +91,13 @@ class UIStateMachine  {
 
     wantCloseWIPView = action(function(){
         this.event.set(UIState.INITIAL);
-        this.target = undefined;
+        this.target = null;
     })
 
 
     wantCloseBoundrayTextEditor = action(function(target){
         this.event.set(UIState.INITIAL);
         this.target = target;
-        this.modalShouldOpen = false;
     })
 
 
@@ -102,7 +107,6 @@ class UIStateMachine  {
         console.log("wnatCloseCurrent() after  ", this.event.get());
 
         this.target = target;
-        this.modalShouldOpen = false;
     })
 
 
@@ -138,7 +142,15 @@ class UIStateMachine  {
         console.log('shouldWIPOpen', this.event.get());
         console.log('target=', this.event.target);
         return this.event.get() === UIState.WORK_IN_PROGRESS_VIEW_INITIATED;
-    })    
+    })  
+
+
+    shouldEnableBoundaryEditMode = computed(() => {
+        console.log('shouldEnableBoundaryEditMode', this.event.get());
+        return this.event.get() === UIState.BOUNDARY_DRAW_MODE_INITIATED;
+    })  
+
+
 }
 
 
@@ -218,25 +230,25 @@ export class DataStore {
 class WorkInProgress {
 
     constructor() {
-        this.map = observable.shallowMap(); // Work-In-Progress items
+        this.map = observable.map(); // Work-In-Progress items
         this.id = 0;
     }
 
-    nextId() {
+    nextId = action(() => {
         this.id = this.id - 1;
         return this.id;
-    }
+    })
 
     // Add a new WIP item
-    addNew(item) {
+    addNew = action((item) => {
         const id = this.nextId();
         this.map.set(id, item);
         this.selectedId = id;
         return id;
-    }
+    })
 
 
-    updateOrAdd(id, item) {
+    updateOrAdd = action((id, item) => {
         if (id === undefined) {
             id = this.addNew(item);
         } 
@@ -246,9 +258,43 @@ class WorkInProgress {
         }
         this.selectedId = id;
         return id;
+    })
+
+
+    // Update the properties part of the feature
+    // create new feature if doesn't exist
+    updateProperties = action((id, properties) => {
+        const feature = this.map.get(id);
+        if (feature) {
+            feature.properties = properties;
+        } else {
+            const feature = {
+                type: 'Feature',
+                geometry: null,
+                properties: properties,
+            }
+            return this.map.set(id, feature);
+        }
+
+    })
+
+    get(id) {
+        return this.map.get(id);
     }
 
-   // workingItemId = () => (this.selectedId)
+    remove(id) {
+        return this.map.delete(id);
+    }
+
+
+    values() {
+        return this.map.values();
+    }
+
+
+    entries() {
+        return this.map.entries();
+    }
 }
 
 
