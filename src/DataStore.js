@@ -1,4 +1,4 @@
-import {useStrict, observable, action, computed} from 'mobx';
+import {useStrict, observable, action, computed, toJS} from 'mobx';
 
 import Backend from './Backend';
 
@@ -265,8 +265,10 @@ class WorkInProgress {
     // create new feature if doesn't exist
     updateProperties = action((id, properties) => {
         const feature = this.map.get(id);
+        console.log("About to update {id, feature} with {properties}: ", id, feature, properties);
         if (feature) {
             feature.properties = properties;
+            return id;
         } else {
             const feature = {
                 type: 'Feature',
@@ -279,7 +281,7 @@ class WorkInProgress {
     })
 
     get(id) {
-        return this.map.get(id);
+        return toJS(this.map.get(id));
     }
 
     remove(id) {

@@ -23,8 +23,8 @@ class FormHandler extends MobxReactForm {
 
     onSuccess(form) {
         console.log('Form Values!', form.values());
-        const id=  store.wip.updateProperties(form.values().id, toGeoJsonProps(form.values()));
-        if (form.values().id !== id) {
+        const id =  store.wip.updateProperties(form.values().id, toGeoJsonProps(form.values()));
+        if (id && form.values().id !== id) {
             form.$('id').set(id); 
         }
     }

@@ -2,11 +2,13 @@ import React, { Component } from 'react';
 import * as turfBuffer from '@turf/buffer';
 import turfHelpers from '@turf/helpers';
 import * as turfBbox from '@turf/bbox';
-import {observer} from 'mobx-react';
+import { observer } from 'mobx-react';
+import SplitPane from 'react-split-pane';
 
 import MainMap from './Map';
 import MyNavbar from './nav';
 import SearchBar from './SearchBar';
+import Dashboard from './edit/Dashboard';
 import WIP from './edit/WIP';
 
 
@@ -101,8 +103,17 @@ export default class TheApp extends Component {
                     <SearchBar initialSearch="" updateMapCenter={this.updateMapCenter}/>
                 </MyNavbar>
                 <WIP/>
-                <MainMap center={lngLatFlip(center)} bbox={bboxFlip(bbox)} {...theRest} />
+                <SplitPane split="vertical" allowResize={false} minSize={600} defaultSize="30%">
+                    <div className="dashboard">
+                        <Dashboard/>
+                    </div>
+                    <div>
+                        <MainMap center={lngLatFlip(center)} bbox={bboxFlip(bbox)} {...theRest} />
+                    </div>
+                </SplitPane>
             </div>
+
+
 
     );} // render()
 }

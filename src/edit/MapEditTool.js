@@ -10,6 +10,8 @@ import {store} from '../DataStore';
 
 
 const polygonOptions = {
+    allowIntersection: false,
+    showArea: true,
     shapeOptions: {
         color: '#8B4513',
         weight: 2,
@@ -87,6 +89,8 @@ function _onCreated(e) {
             break;
         case 'polygon':
             console.log("New polygon: ", e.layer);
+            e.layer.bringToBack();
+            e.layer.interactive=false;
             const feature = e.layer.toGeoJSON();
             console.log(feature);
             store.wip.updateOrAdd(e.layer._leaflet_id, feature);

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {observer} from 'mobx-react';
 import {Modal, Button, ListGroup, ListGroupItem} from 'react-bootstrap';
+import FontAwesome from 'react-fontawesome';
 
 import {store} from '../DataStore';
 
@@ -60,7 +61,7 @@ const WIPList = observer(() => {
 });
 
 
-class CustomListItem extends Component {
+const CustomListItem = observer(class CustomListItem extends Component {
 
     onClick = (id) => {
         console.log("onClick", id);
@@ -72,10 +73,25 @@ class CustomListItem extends Component {
     render() {
         console.log("List item:", this.props.feature, this.props.id);
         const geojson_props = this.props.feature.properties;
+        const name = geojson_props.name ? geojson_props.name : "Name not defined";
         return (
-            <ListGroupItem onClick={()=>this.onClick(this.props.id)}>{geojson_props.name}</ListGroupItem>
+            <ListGroupItem onClick={()=>this.onClick(this.props.id)}>{this.makeIcon(this.props.feature.geometry.type)} {name}</ListGroupItem>
             )
     }
-}
+
+    makeIcon = (type) => {
+        switch (type) {
+            case 'Polygon':
+                return <FontAwesome name='object-group'/>
+                break;
+            default:
+                return null;
+        } 
+    }
+});
+
 
 export default WIP;
+export {
+    WIPList
+}

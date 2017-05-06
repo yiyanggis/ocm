@@ -19,17 +19,13 @@ const AreaHandleManager = observer(class AreaHandleManager extends Component {
     clickHandler = (layerId) => {
         if (this.featureGroupRef.leafletElement._map) {
             this.featureGroupRef.leafletElement._map.closePopup();
-            console.log(this.featureGroupRef);
-            this.featureGroupRef.leafletElement.setZIndex(4000);
         }
-        console.log('Boundary handler clicked ', layerId);
         store.uiState.wantOpenBoundaryTextEditor(layerId);
     }
 
 
     render() {
         const polygons = store.wip.entries().filter(entry => entry[1].geometry.type === 'Polygon');
-        console.log("BoundaryHandleLayer ", polygons);
         return (
             <LayerGroup ref={(ref)=>this.featureGroupRef=ref} >
                 {   

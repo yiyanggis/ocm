@@ -11,12 +11,12 @@ export default class NavToolbar extends Component {
 
 
     onClick = (e) => {
-        console.log(e);
+        console.log("event:", e);
         switch (e) {
-            case 1: 
+            case 1.1: 
                 alert("Add a climb coming soon.  Please try to add an Area!");
                 break;
-            case 2:
+            case 1.2:
                 store.uiState.wantBeginBoundaryDrawing(undefined);
                 break;
             case 4:
@@ -31,18 +31,18 @@ export default class NavToolbar extends Component {
         return (
           <Nav onSelect={this.onClick}>
             <NavDropdown id='Add-climb-or-area' title={<span><FontAwesome name='plus'/>&nbsp;&nbsp;Add</span>}>
-                <MenuItem eventKey={1} href="#">
+                <MenuItem eventKey={1.1} href="#">
                     <FontAwesome name='map-marker'/>&nbsp;&nbsp;Climb
                 </MenuItem>
-                <MenuItem eventKey={2}>
+                <MenuItem eventKey={1.2}>
                     <FontAwesome name='object-group'/>&nbsp;&nbsp;Area
                 </MenuItem>
                 <MenuItem divider/>
-                <MenuItem eventKey={3}>
+                <MenuItem eventKey={1.3}>
                     Expert edit mode
                 </MenuItem>               
             </NavDropdown>
-            <NavItem eventKey={4}>
+            <NavItem eventKey={2}>
                 <WIPIconComponent/>
             </NavItem>            
           </Nav>);

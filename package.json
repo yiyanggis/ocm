@@ -33,6 +33,7 @@
     "react-leaflet-markercluster": "^1.1.3",
     "react-modal": "^1.6.5",
     "react-scripts": "^0.9.5",
+    "react-split-pane": "^0.1.63",
     "react-stepzilla": "^4.4.9",
     "validatorjs": "^3.11.0",
     "whatwg-fetch": "^2.0.2"

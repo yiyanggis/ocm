@@ -249,7 +249,7 @@ export default class MainMap extends Component {
                 zoomControl={false}
                 maxZoom={22}
                 onZoomEnd={(e) => { 
-                    this.setState({zoom: e.target._zoom});}}> 
+                    this.setState({zoom: e.target._zoom});}}
                 ref="leafletMap">
 
                 <ZoomControl position='topleft' />
