@@ -9,7 +9,7 @@ import NavToolbar from './NavToolbar';
 export default class MyNavbar extends Component {
   render() {
   return(
-      <Navbar collapseOnSelect>
+      <Navbar collapseOnSelect fluid={true}>
         <Navbar.Header>
           <Navbar.Brand>
             <Image src={logo} />

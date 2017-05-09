@@ -239,8 +239,6 @@ export default class MainMap extends Component {
 
     render() {
         return (
-            <div className="mapRoot">
-            <PropertiesEditor store={store}/>
             <Map 
                 style={{height:'100%'}} 
                 center={this.props.center}
@@ -289,9 +287,7 @@ export default class MainMap extends Component {
                         </LayerGroup>
                     </LayersControl.Overlay>
                 </LayersControl>
-
               </Map>
-              </div>
             );
     } //render
 };

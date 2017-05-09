@@ -1,6 +1,16 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
-import { Modal, Button, ListGroup, ListGroupItem, Accordion, Panel } from 'react-bootstrap';
+import { 
+    form, 
+    FormGroup, 
+    ControlLabel, 
+    FormControl, 
+    Button, ListGroup, 
+    ListGroupItem, 
+    Accordion, 
+    Panel, 
+    HelpBlock
+} from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 
 import {store} from '../DataStore';
@@ -22,7 +32,7 @@ const WorkspaceDetail = observer(class WorkspaceDetail extends Component {
         return (
             <div>
                 <WSHeader/>
-                <Accordion defaultExpanded="false">
+                <Accordion>
                     {list}
                 </Accordion>
             </div>
@@ -77,5 +87,20 @@ const EditableItem = observer(class EditableItem extends Component {
     }
 });
 
+
+const AreaEditForm = observer(class AreaEditForm extends Component {
+
+    render() {
+        return(
+            <form>
+                <FormGroup controlId="name">
+                    <ControlLabel>Area name</ControlLabel>
+                    <FormControl type="text" placeholder="Enter text" />
+                    {<HelpBlock>help!</HelpBlock>}
+                </FormGroup>
+            </form>
+            )
+    }
+});
 
 export default WorkspaceDetail;

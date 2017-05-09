@@ -103,17 +103,16 @@ export default class TheApp extends Component {
                     <SearchBar initialSearch="" updateMapCenter={this.updateMapCenter}/>
                 </MyNavbar>
                 <WIP/>
-                <SplitPane split="vertical" allowResize={false} minSize={600} defaultSize="30%">
-                    <div className="dashboard">
-                        <Dashboard/>
-                    </div>
-                    <div>
-                        <MainMap center={lngLatFlip(center)} bbox={bboxFlip(bbox)} {...theRest} />
-                    </div>
-                </SplitPane>
+                <div className="content">
+                        <SplitPane resizerClassName="Resizer" split="vertical" allowResize={true} minSize={400}>
+                            <div className="dashboard">
+                                <Dashboard/>
+                            </div>
+                            <div className="map-container">
+                                <MainMap center={lngLatFlip(center)} bbox={bboxFlip(bbox)} {...theRest} />
+                            </div>
+                        </SplitPane>
+                </div>
             </div>
-
-
-
     );} // render()
 }
