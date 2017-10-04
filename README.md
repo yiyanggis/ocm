@@ -1,27 +1,22 @@
-# Description
-OpenClimbMap, the climbing map sharing app, is a single page React.js web application.
+## Overview
+Welcome to OpenClimbMap (OCM) project, the future search engine for rock climbers!
 
-Live demo: https://openbeta.io/demo
+This project was born out of frustration over the lack of free online climing maps.  For example, how can I locate a route or share GPS coordinates with friends and the climbing community?  
 
-# Build Instructions
+What can the app do at the moment?
+- Show climbing routes as markers within a search radius. Data was previously bulk imported from OpenStreetMap with tag `sport=climbing`.
 
-Set `REACT_APP_ENV` environment variable to `prod` to connect to our live API server (recommended) or `dev` if you run your own API server on localhost
-```
-# export REACT_APP_ENV=prod
-```
+Work-In-Progress:
+- Show detail information such as name, grade, link to external sites on mouse click
+- Allow editing and adding new routes
 
-Install dependencies
-```
-# git clone <your fork repo>
-# cd ocm
-# npm install
-```
+Live demo:
+- https://openbeta.io/demo
 
-Start the app
-```
-# npm start
-```
-See [REACT_APP_README.md](REACT_APP_README.md) for more information about the build tool.
+![OpenClimbMap diagram](openbeta-overview.png)
 
-# License
+## Want to Help out?
+-  Please see the [Contributing guide](CONTRIBUTING.md).
+
+## License
 GPL v3
