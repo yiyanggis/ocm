@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 
-import { Container, Divider, Dropdown, Grid, Header, Image, List, Menu, Segment } from 'semantic-ui-react'
-
 import MainMap from './Map';
 import MyNavbar from './nav';
 import SearchBar from './SearchBar';
+import SidebarContainer from './SidebarContainer';
 
 import {store} from './DataStore';
 
@@ -62,30 +61,11 @@ export default class ReactApp extends Component {
     }
 
 
-    okHandler = (backendData) => {
-        console.log(backendData);
-        this.setState({
-                routeData: backendData.route,
-                boundaryData: backendData.boundary,
-                error: {code: 200}
-        });
-    }
-
-
-    errorHandler = (response) => {
-        this.setState({
-            error: {
-                code: response.status,
-                msg: response.statusText
-            }
-        });
-    }
-
 
     updateMapCenter = ({geocode, radius}) => {
         console.log('Map filters:', geocode, radius);
         const bbox = makeBBox(geocode.center, radius);
-        this.loadData({center: geocode.center, radius: radius});
+        store.loadFromBackend({center: geocode.center, radius: radius});
         this.setState({
             center: geocode.center,
             bbox: bbox,
@@ -94,11 +74,6 @@ export default class ReactApp extends Component {
     }
 
 
-    loadData = ({center, radius}) => {
-        const options = {center: center, radius: radius, okHandler: this.okHandler, errorHandler: this.errorHandler};
-        store.backend.load(options);
-    }
-
     render() {
         // Important: Leaflet expects [Lat,Lng] 
         // so we need to reverse [x,y] of center and bbox 
@@ -106,25 +81,14 @@ export default class ReactApp extends Component {
         // Other components that accept Geojson will need to handle
         // the flipping as needed.
         const {center, bbox, ...theRest} = this.state;
+        const mainMap = <MainMap center={lngLatFlip(center)} bbox={bboxFlip(bbox)} {...theRest} ref={(mainMap)=>{this.mainMap = mainMap}}/>;
+        
         return (
             <div>
                 <MyNavbar mapRef={this.mainMap}>
                     <SearchBar initialSearch="" updateMapCenter={this.updateMapCenter}/>
                 </MyNavbar>
-                <Grid divided>
-                    <Grid.Row>
-                        <Grid.Column width={5}>
-                            <div style={{marginTop: '5em', marginLeft: '2em', height: '90vh'}}>
-                                <Header>
-                                    Future side bar for displaying route detail view/edit form
-                                </Header>
-                            </div>
-                        </Grid.Column>
-                        <Grid.Column width={11} >
-                            <MainMap center={lngLatFlip(center)} bbox={bboxFlip(bbox)} {...theRest} ref={(mainMap)=>{this.mainMap = mainMap}}/>
-                        </Grid.Column>
-                    </Grid.Row>
-                </Grid>
+                <SidebarContainer sidebarContent={null} mainContent={mainMap}/>
             </div>
     );} // render()
 }

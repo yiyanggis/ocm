@@ -1,8 +1,10 @@
-import React from 'react';
-import {LayerGroup, GeoJSON, FeatureGroup, CircleMarker, Popup, Tooltip} from 'react-leaflet';
-import {observer, toJS} from 'mobx-react';
+import React, {Component} from 'react';
+import {LayerGroup, CircleMarker, Tooltip} from 'react-leaflet';
+import {observer} from 'mobx-react';
 
 import {store} from './../DataStore';
+import {flattenGeojson} from '../detail-views/Utils';
+import OSMDetail from '../detail-views/OSMDetail';
 
 
 const OSMClimbingDataLayer = observer(() => {
@@ -12,46 +14,47 @@ const OSMClimbingDataLayer = observer(() => {
 
     const jsonData = store.osmData.slice();
    
-   console.log("osm json: ", jsonData);
+    console.log("osm json: ", jsonData);
 
-   return <OSMWorkerComponent geojson={jsonData} />
+    return <OSMWorkerComponent geojson={jsonData} />
 });
 
 
-const OSMWorkerComponent = ({geojson}) => {
-    if (geojson === undefined || geojson.length < 1) {
-        return <LayerGroup/>;
-    }
-    var index=-1;
-    const dataLayer = geojson.map(
-        function(feature) {
-            index++;
-            const latlng = [feature.geometry.coordinates[1], feature.geometry.coordinates[0]];
-            var relations = '<none>';
-            if (feature.properties.relations && feature.properties.relations.length > 0) {
-                relations = feature.properties.relations.map(
-                    item => item.reltags.name
-                ).join(',');
-            }
-            return (
-                    <CircleMarker key={index} center={latlng}  color='white' weight='3'>
-                        <Tooltip>
-                            <span>
-                              Name: {feature.properties.tags.name}<br/>
-                              OSM Type: {feature.properties.type}<br/>
-                              OSM Relation: {relations }
-                            </span>
-                        </Tooltip>
-                    </CircleMarker>
-                )
-        }
-    );
-    return (
-        <LayerGroup>
-            {dataLayer}
-        </LayerGroup>
-    )
-}
+class OSMWorkerComponent extends Component {
 
+    markerOnClick = (index) => {
+        store.uiState.showSidebar({type: OSMDetail, props: {dataIndex: index}});
+    }
+
+    render() {
+        const geojson = this.props.geojson;
+        if (geojson === undefined || geojson.length < 1) {
+            return <LayerGroup/>;
+        }
+        const dataLayer = geojson.map(
+            (feature, index) => {
+                const latlng = [feature.geometry.coordinates[1], feature.geometry.coordinates[0]];
+                const data = flattenGeojson(feature);
+                return (
+                        <CircleMarker key={index} center={latlng}  color='#33ccff' weight='5' radius='20' 
+                                    onClick={()=>this.markerOnClick(index)}>
+                            <Tooltip>
+                                <span>
+                                Name: {data.name}<br/>
+                                OSM Type: {data.osmType}<br/>
+                                OSM Relation: {data.rels.join(',')}
+                                </span>
+                            </Tooltip>
+                        </CircleMarker>
+                    )
+            }
+        );
+        return (
+            <LayerGroup>
+                {dataLayer}
+            </LayerGroup>
+        )
+    }
+}
 
 export default OSMClimbingDataLayer;

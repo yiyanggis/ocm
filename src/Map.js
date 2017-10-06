@@ -1,15 +1,13 @@
 import React, { Component } from 'react';
-import {divIcon, point} from 'leaflet';
 import {Map, TileLayer, LayersControl, ZoomControl, ScaleControl, LayerGroup, Polygon, FeatureGroup, CircleMarker, Popup} from 'react-leaflet';
 import { EditControl } from "react-leaflet-draw";
-import MarkerClusterGroup from 'react-leaflet-markercluster';
-import 'whatwg-fetch';
+//import 'whatwg-fetch';
 import {observer} from 'mobx-react';
 
 import Radar from './map/Radar';
 import {store} from './DataStore';
-import PropertiesEditor from './PropertiesEditor';
 import OSMClimbingDataLayer from './osm/OSMClimbingDataLayer';
+import ClimbMarkerCluster from './map/ClimbMarkerCluster';
 
 
 const mapboxAttribution = 'Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, ' +
@@ -61,60 +59,6 @@ const defaultMarkerOptions = {
     zIndexOffset: 1000  
 };
 
-
-// create custom icon based on the type of climb
-function makeIconFor(geoJsonFeature) {
-    return divIcon({
-            html: '', 
-            className: 'custom-marker-icon', 
-            iconSize: [30, 30]});
-}
-
-
-const markerclusterOptions = {
-    showCoverageOnHover: false,
-   // spiderfyDistanceMultiplier: 1,
-
-    // Setting custom icon for cluster group
-    // https://github.com/Leaflet/Leaflet.markercluster#customising-the-clustered-markers
-    iconCreateFunction: (cluster) => {
-      return divIcon({
-        html: `<span>${cluster.getChildCount()}</span>`,
-        className: 'custom-cluster-icon',
-        iconSize: point(40, 40, true)
-      });
-    },
-};
-
-
-function grade_hack(tags) {
-    const regex = /^climbing:grade:.*$/;
-    const results = [];
-    for (var property in tags) {
-        if (regex.test(property)) {
-            results.push({[property]: tags[property]});
-        }
-    }
-    return results;
-}
-
-
-function url_hack(name, tags) {
-    if (tags === undefined) {
-        return name;
-    }
-    var url;
-    if (tags.website !== undefined) {
-        url = tags.website;
-    } else if (tags.url !== undefined) {
-        url = tags.url;
-    } else {
-        return name;
-    }
-    return '<a href="' + url + '" target="_new">' + name + '</a>';
-}
-
-
 function url_hack2(name, tags) {
     if (tags === undefined) {
         return name;
@@ -129,46 +73,6 @@ function url_hack2(name, tags) {
     }
     return <a href={url} target='_new'>{name}</a>;
 }
-
-
-class RouteClustersLayer extends Component {
-
-    render() {
-        console.log('RouteClustersLayer:render()', this.props.routeData);
-        if (this.props.routeData.features === undefined) {
-            return <LayerGroup />;
-        }
-
-        const markers = this.props.routeData.features.map(
-                function(feature) {
-                    const customIcon = makeIconFor(feature);
-                    var grade;
-                    if (feature.properties.grade !== undefined) {
-                        grade = feature.properties.grade.value;
-                    } else {
-                        grade = grade_hack(feature.properties.tags).map(item =>'<p>' + JSON.stringify(item) + '</p>');
-                    }
-
-                    const marker = {
-                        lat: feature.geometry.coordinates[1],
-                        lng: feature.geometry.coordinates[0],
-                        popup: 'Name: ' + url_hack(feature.properties.name, feature.properties.tags) + ' ' + grade,
-                        options: {icon: customIcon}
-                    }
-                    return marker;
-                });
-        return (
-                <LayerGroup>
-                    <MarkerClusterGroup
-                        markers={markers}
-                        wrapperOptions={{enableDefaultStyle: true}} 
-                        options={markerclusterOptions}
-                    />
-                </LayerGroup>
-                );
-    }
-}
-
 
 class GeoJSONLayer extends Component {
 
@@ -319,7 +223,7 @@ export default class MainMap extends Component {
 
                 <ZoomControl position='bottomright' />
                 <ScaleControl position='bottomleft'/>
-                <LayersControl position='topleft'>
+                <LayersControl position='topright'>
                     <LayersControl.BaseLayer name='Satellite'>
                         <TileLayer
                           attribution={mapboxAttribution}
@@ -342,7 +246,7 @@ export default class MainMap extends Component {
                     <Radar zoomLevel={this.state.zoom} center={this.props.center} radius={this.props.radius} />         
                 
                     <LayersControl.Overlay checked name='Routes'>
-                        <RouteClustersLayer routeData={this.props.routeData} />
+                        <ClimbMarkerCluster />
                     </LayersControl.Overlay>
                     <LayersControl.Overlay checked name='Areas'>
                         <GeoJSONLayer data={this.props.boundaryData} />
@@ -354,7 +258,7 @@ export default class MainMap extends Component {
                         <LayerGroup>
                             <FeatureGroup>
                                 <EditControl
-                                  position='topleft'
+                                  position='topright'
                                   onEdited={this._onEditPath}
                                   onCreated={_onCreate}
                                   onDeleted={_onDeleted}

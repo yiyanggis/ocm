@@ -10,11 +10,14 @@ export default class MyNavbar extends Component {
     console.log("event:", e);
     switch (e) {
         case 1: 
-          if (this.props.mapRef === undefined) {
+            if (this.props.mapRef === undefined) {
             break;
-          }
-          store.getOSMData(this.props.mapRef.getBBox());
-          break;
+            }
+            store.getOSMData(this.props.mapRef.getBBox());
+            break;
+        
+        default:
+            throw new Error(`Unexpected menu option: ${e}`);
     }
   }
   

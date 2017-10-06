@@ -1,6 +1,6 @@
 import {useStrict, observable, action} from 'mobx';
-import Backend from './Backend';
 
+import Backend from './Backend';
 const osmQuery = require('query-overpass');
 
 
@@ -18,38 +18,14 @@ export const UIState = {
     BOUNDARY_TEXT_EDIT_STARTED: "boundary-text-edit-started",
     BOUNDARY_TEXT_EDIT_COMPLETED: "boundary-text-edit-completed",
 
+    SHOW_SIDEBAR: "show-sidebar",
+    HIDE_SIDEBAR: "hide-sidebar"
 }
-
-
-export const GradeType = {
-        YSD: 'Yosemite Decimal System',
-        V: 'Hueco V-scale',
-        FR: 'French',
-    }
-
-export class Grade {
-	constructor(value, type) {
-		this.value = value;
-		this.type = type;
-	}
-}
-
-export class Route {
-	constructor(name, grade) {
-		this.name = name;
-		this.grade = grade;
-	}
-}
-
-export class Marker {
-	constructor(layer) {
-		this.layer = layer;
-	}
-}
+ 
 
 const state = {
     event: UIState.INITIAL,
-    target: 0,
+    target: undefined,
     modalShouldOpen: false,
 
     get currentState() {
@@ -122,7 +98,25 @@ const state = {
         if (this.event === UIState.DATA_LOAD_INITIATED) {
             this.event = UIState.DATA_LOAD_COMPLETED;
         }
-    })
+    }),
+
+    showSidebar: action(
+        UIState.SHOW_SIDEBAR, 
+        function(target) {
+            console.log('showSidebar() currentState: ', this.event);
+            this.event = UIState.SHOW_SIDEBAR;
+            this.target = target;
+        }
+    ),
+
+    hideSidebar: action(
+        UIState.HIDE_SIDEBAR, 
+        function(target) {
+            console.log('hideSidebar() currentState: ', this.event);
+            this.event = UIState.HIDE_SIDEBAR;
+            this.target = target;
+        }
+    ) 
 }
 
 
@@ -139,18 +133,28 @@ export class EditableObject {
     }
 }
 
+const defaultGEOJSONFeature = {
+    "type":"Feature",
+    "id":"",
+    "geometry": {},
+    "properties": {}
+}
+
 export class DataStore {
     uiState = observable(state);
     store = observable.map();
     backend = new Backend();
-    osmData = observable.shallowArray([{
-        "type":"Feature",
-        "id":"node/4578677466",
-        "properties": {}
-    }], 'Raw OSM data');
+    
+    osmData = observable.shallowArray([
+        defaultGEOJSONFeature], 'Raw OSM data');
+
+    routeData = observable.shallowArray([defaultGEOJSONFeature], 'OpenBeta route data');
+    boundaryData = observable.shallowArray([defaultGEOJSONFeature], 'OpenBeta boundary data');
+    
 
     constructor() {
         action(this.osmData.clear());
+        action(this.routeData.clear());
     }
 
     addObject(layer, type) {
@@ -204,11 +208,35 @@ export class DataStore {
     }
 
 
+    loadFromBackend({center, radius}) {
+        const okHandler = (backendData) => {
+            console.log(backendData);
+            this.routeData.replace(backendData.route.features);
+            this.boundaryData.replace(backendData.boundary.features);
+        }
+
+        const errorHandler = (response) => {
+            //TODO: cache error
+            //response.status,
+            //response.statusText
+        }
+
+        const options = {
+            center: center, 
+            radius: radius, 
+            okHandler: action('loadFromBackend.okHandler()', okHandler), 
+            errorHandler: action('loadFromBackend.errorHandler()', errorHandler)
+        }
+
+        this.backend.load(options);
+    } //loadFromBackend
+
+
     getOSMData (bboxArray) {
         const bbox = bboxArray.join(',');
         const node = `node[sport=climbing](${bbox})`;
         const way = `way[sport=climbing](${bbox})`;
-        const rel = `relation[sport=climbing](${bbox})`;
+        //const rel = `relation[sport=climbing](${bbox})`;
         const q = `[out:json];(${node};<;${way};<;);out;`;
         console.log('Overpass query: ', q);
 
