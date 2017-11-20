@@ -1,11 +1,12 @@
-import React, { Component } from 'react';
+import React, { Component } from 'react'
 
-import MainMap from './Map';
-import MyNavbar from './nav';
-import SearchBar from './SearchBar';
-import SidebarContainer from './SidebarContainer';
+import MainMap from './Map'
+import SearchBar from './SearchBar'
+import SidebarContainer from './SidebarContainer'
 
-import {store} from './DataStore';
+import {store} from './DataStore'
+import {uiState} from './model/UIState'
+import TopNav from './TopNav'
 
 const turfBuffer = require('@turf/buffer');
 const turfHelpers = require('@turf/helpers');
@@ -81,14 +82,21 @@ export default class ReactApp extends Component {
         // Other components that accept Geojson will need to handle
         // the flipping as needed.
         const {center, bbox, ...theRest} = this.state;
-        const mainMap = <MainMap center={lngLatFlip(center)} bbox={bboxFlip(bbox)} {...theRest} ref={(mainMap)=>{this.mainMap = mainMap}}/>;
+    const mainMap = (<MainMap center={lngLatFlip(center)} 
+                              bbox={bboxFlip(bbox)} 
+                              {...theRest} 
+                              ref={(mainMap)=>{this.mainMap = mainMap}}
+                              uiState={uiState}
+                              />);
         
         return (
             <div>
-                <MyNavbar mapRef={this.mainMap}>
+                <TopNav mapRef={this.mainMap}>
                     <SearchBar initialSearch="" updateMapCenter={this.updateMapCenter}/>
-                </MyNavbar>
-                <SidebarContainer sidebarContent={null} mainContent={mainMap}/>
+                </TopNav>
+                {/* <MyNavbar mapRef={this.mainMap}>
+                </MyNavbar> */}
+                <SidebarContainer uiState={uiState} mainContent={mainMap}/>
             </div>
     );} // render()
 }

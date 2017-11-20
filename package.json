@@ -8,6 +8,7 @@
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-preset-react": "^6.24.1",
+    "javascript-state-machine": "^3.0.1",
     "react-scripts": "^1.0.14"
   },
   "dependencies": {
@@ -16,6 +17,8 @@
     "@turf/helpers": "^4.7.3",
     "babel-core": "^6.26.0",
     "babel-runtime": "^6.26.0",
+    "formsy-react": "^0.19.5",
+    "formsy-semantic-ui-react": "^0.2.12",
     "leaflet": "^1.2.0",
     "leaflet-draw": "^0.4.12",
     "leaflet.markercluster": "^1.1.0",

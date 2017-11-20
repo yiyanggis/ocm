@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import {Map, TileLayer, LayersControl, ZoomControl, ScaleControl, LayerGroup, Polygon, FeatureGroup, CircleMarker, Popup} from 'react-leaflet';
-import { EditControl } from "react-leaflet-draw";
-//import 'whatwg-fetch';
 import {observer} from 'mobx-react';
 
 import Radar from './map/Radar';
+import PolygonAutoHandle from './map/PolygonAutoHandle';
+import DrawingTool from './map/DrawingTool';
 import {store} from './DataStore';
+import { drawingBuffer } from './model/DrawingModel';
 import OSMClimbingDataLayer from './osm/OSMClimbingDataLayer';
 import ClimbMarkerCluster from './map/ClimbMarkerCluster';
 
@@ -14,40 +15,42 @@ const mapboxAttribution = 'Map data &copy; <a href="http://www.openstreetmap.org
         'Imagery © <a href="http://mapbox.com">Mapbox</a>';
 
 
-store.registerMarkerHandler((change) => {
-    const action = change.type;
-    console.log('Store observer ', action);
-    switch (action) {
-        case 'add':
-            const layer = change.newValue.layer;
-            if (change.newValue.type ==='marker') {
-                layer.on('click', function(e) {
-                    // TODO: when in "interactive delete mode" (by clicking the Trash bin icon)
-                    // we don't want to activate the popup dialog
-                    //store.setUIState({event: UIState.ROUTE_TEXT_EDIT_INITIATED, target: layer._leaflet_id});
-                    store.uiState.wantOpenRouteTextEditor(layer._leaflet_id);
-                    console.log("marker clicked");
-                });
-            } else if (change.newValue.type === 'polygon') {
+// store.registerMarkerHandler((change) => {
+//     const action = change.type;
+//     console.log('Store observer ', action);
+//     switch (action) {
+//         case 'add':
+//             const layer = change.newValue.layer;
+//             if (change.newValue.type ==='marker') {
+//                 layer.on('click', function(e) {
+//                     // TODO: when in "interactive delete mode" (by clicking the Trash bin icon)
+//                     // we don't want to activate the popup dialog
+//                     //store.setUIState({event: UIState.ROUTE_TEXT_EDIT_INITIATED, target: layer._leaflet_id});
+//                     store.uiState.wantOpenRouteTextEditor(layer._leaflet_id);
+//                     console.log("marker clicked");
+//                 });
+//             } else if (change.newValue.type === 'polygon') {
 
-            }
-            break;
+//             }
+//             break;
 
-        case 'delete':
-            console.log('Old value ', change.oldValue);
-            break;
+//         case 'delete':
+//             console.log('Old value ', change.oldValue);
+//             break;
 
-        default:
-            console.log('Action unknown: ', action);
-    }
-});
-
-
+//         default:
+//             console.log('Action unknown: ', action);
+//     }
+// });
 
 
 
 
-const mapboxUrl = "https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoidmlldGdvZXN3ZXN0IiwiYSI6ImNpbzljZnVwNTAzM2x2d2x6OTRpb3JjMmQifQ.rcxOnDEeY4McXKDamMLOlA";
+
+
+//const mapboxUrl = "https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoidmlldGdvZXN3ZXN0IiwiYSI6ImNpbzljZnVwNTAzM2x2d2x6OTRpb3JjMmQifQ.rcxOnDEeY4McXKDamMLOlA";
+
+const mapboxUrl = "https://api.mapbox.com/styles/v1/vietgoeswest/cj90fz6uzjs952rpqij9z4m75/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoidmlldGdvZXN3ZXN0IiwiYSI6ImNpbzljZnVwNTAzM2x2d2x6OTRpb3JjMmQifQ.rcxOnDEeY4McXKDamMLOlA";
 
 const defaultMarkerOptions = {
     radius: 8,
@@ -77,7 +80,7 @@ function url_hack2(name, tags) {
 class GeoJSONLayer extends Component {
 
     render() {
-        return null;
+        return null;  //temporarily disable polygon data
         console.log('GeoJSONLayer.render()', this.props.data);
         if (this.props.data.features === undefined) {
             return <LayerGroup/>;
@@ -144,6 +147,7 @@ const BoundaryHandleLayer = observer(class BoundaryHandleLayer extends Component
         }
         return (
             <LayerGroup>
+                <div>
                 {   
                   polygons.map(v =>
                    <BoundaryHandler 
@@ -151,6 +155,7 @@ const BoundaryHandleLayer = observer(class BoundaryHandleLayer extends Component
                         latlng={v.layer._latlngs[0][0]}
                         clickHandler={this.clickHandler.bind(this, v.layer._leaflet_id)}/>)
                 }
+                </div>
             </LayerGroup>
             );
     }
@@ -165,7 +170,12 @@ const BoundaryHandler = (props) => (
         fillColor='#a9cce3' 
         fillOpacity='1' 
         radius={15} >
-            <Popup><span>Area name: {props.popupContent}</span></Popup>
+            <Popup>
+                <span>
+                    <p>Area name: {props.popupContent}</p>
+                    <p><button name="select">Select</button></p>
+                </span>
+            </Popup>
     </CircleMarker>
 
 );
@@ -206,17 +216,19 @@ export default class MainMap extends Component {
         return [bboxLatLng.getSouth(), bboxLatLng.getWest(), bboxLatLng.getNorth(), bboxLatLng.getEast()];
     }
 
+    getCurrentZoomLevel = () => {
+        return this.state.leafletRef.getZoom();
+    }
 
     render() {
         return (
-            // <PropertiesEditor store={store}/>
             <Map 
                 style={{height:'90%', minHeight: '90vh', width: '100%', position: 'float', marginTop: '5em'}} 
                 center={this.props.center}
                 bounds={this.props.bbox}
                 zoom={this.state.zoom} 
                 zoomControl={false}
-                maxZoom={22}
+                maxZoom={23}
                 onZoomEnd={(e) =>
                     this.setState({zoom: e.target._zoom})} 
                 ref={ref=>this.leafletRef=ref}>
@@ -228,19 +240,23 @@ export default class MainMap extends Component {
                         <TileLayer
                           attribution={mapboxAttribution}
                           url={mapboxUrl}
-                          id='mapbox.satellite'/>
+                          id='mapbox.satellite'
+                          maxZoom='23'
+                          />
                     </LayersControl.BaseLayer>
                     <LayersControl.BaseLayer name='Outdoors'>
                         <TileLayer
                           attribution={mapboxAttribution}
                           url={mapboxUrl}
-                          id='mapbox.outdoors'/>
+                          id='mapbox.outdoors'
+                          maxZoom='23'/>
                     </LayersControl.BaseLayer>
                     <LayersControl.BaseLayer checked name='Light'>
                         <TileLayer
                           attribution={mapboxAttribution}
                           url='https://api.mapbox.com/styles/v1/mapbox/light-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoidmlldGdvZXN3ZXN0IiwiYSI6ImNpbzljZnVwNTAzM2x2d2x6OTRpb3JjMmQifQ.rcxOnDEeY4McXKDamMLOlA'
-                          id='mapbox.light'/>
+                          id='mapbox.light'
+                          maxZoom='23'/>
                     </LayersControl.BaseLayer>
 
                     <Radar zoomLevel={this.state.zoom} center={this.props.center} radius={this.props.radius} />         
@@ -252,34 +268,12 @@ export default class MainMap extends Component {
                         <GeoJSONLayer data={this.props.boundaryData} />
                     </LayersControl.Overlay>
                     <LayersControl.Overlay checked name='OSM data'>
-                        <OSMClimbingDataLayer/>
+                        <OSMClimbingDataLayer uiState={this.props.uiState}/>
                     </LayersControl.Overlay>
                     <LayersControl.Overlay checked name='Your edits'>
                         <LayerGroup>
-                            <FeatureGroup>
-                                <EditControl
-                                  position='topright'
-                                  onEdited={this._onEditPath}
-                                  onCreated={_onCreate}
-                                  onDeleted={_onDeleted}
-                                  onDeleteStop={_onDeleteStop}
-                                  draw={{
-                                    rectangle: false,
-                                    circle: false,
-                                    polygon: {
-                                     shapeOptions: {
-                                        color: '#8B4513',
-                                        weight: 2,
-                                        fillColor: '#778899',
-                                        fillOpacity: 0.08,
-                                        clickable: false,
-                                        lineJoin: 'round'
-                                        }
-                                    }
-                                  }}
-                                />
-                            </FeatureGroup>
-                            <BoundaryHandleLayer />
+                            <DrawingTool observableUIState={this.props.uiState.states} />
+                            <PolygonAutoHandle data={ drawingBuffer.data } />
                         </LayerGroup>
                     </LayersControl.Overlay>
                 </LayersControl>
@@ -288,36 +282,3 @@ export default class MainMap extends Component {
             );
     } //render
 };
-
-
-function _onCreate(e) {
-    console.log('Layer type: ', e.layerType);
-    console.log("Layer: ", e.layer);
-    const type = e.layerType;
-    switch (type) {
-        case 'marker':
-            store.addObject(e.layer, 'marker');
-            break;
-        case 'polygon':
-            console.log("New polygon: ", e.layer);
-            store.addObject(e.layer, 'polygon');
-            break;
-        default:
-            console.log("Layer type not supported: " + type);
-    }
-}
-
-function _onDeleteStop(e) {
-    console.log('_onDeleteStop ', e);
-    console.log('store ', store.store.entries())
-    //store.deleteObject(e.layer._leaflet_id);
-}
-
-function _onDeleted(e) {
-    console.log('_onDeleted ', e);
-    e.layers.eachLayer(function(l) {
-            console.log('layer ', l);
-            store.deleteObject(l._leaflet_id);
-            });
-    console.log('store ', store.store.entries())
-}

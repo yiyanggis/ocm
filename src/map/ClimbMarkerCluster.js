@@ -4,11 +4,11 @@ import {LayerGroup, Marker, Tooltip} from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import {observer} from 'mobx-react';
 
-import {store} from './../DataStore';
-import ClimbDetail from '../detail-views/ClimbDetail';
+import {store} from '../DataStore';
+import {fsm, UIEvent} from '../model/UIState';
+import ClimbDetailView from '../sidebar/ClimbDetailView';
 
-const ClimbMarkerCluster = observer(
-    () => {
+const ClimbMarkerCluster = observer(() => {
         console.log('ClimbClusters:render() ', store.routeData);
         if (store.routeData === undefined || store.routeData.length < 1) {
             return <LayerGroup />;
@@ -35,7 +35,8 @@ const ClimbMarkerCluster = observer(
 
 
 const onMarkerClickHandler = (marker) => {
-    store.uiState.showSidebar({type: ClimbDetail, props: {index: marker.options.dataIndex}});    
+   const event = new UIEvent({VIEW: ClimbDetailView, visible: true, props: {dataIndex: marker.options.dataIndex}});
+   fsm.showDetailOnSidebar(event);
 }
 
 

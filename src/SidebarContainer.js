@@ -2,55 +2,54 @@ import React, { Component } from 'react';
 import {observer} from 'mobx-react';
 import { Sidebar, Segment, Button} from 'semantic-ui-react';
 
-import OSMDetail from './detail-views/OSMDetail';
-import ClimbDetail from './detail-views/ClimbDetail';
-import {store, UIState} from './DataStore';
+import OSMDetailView from './sidebar/OSMDetailView';
+import ClimbDetailView from './sidebar/ClimbDetailView';
+import BoundaryAddView from './sidebar/BoundaryAddView';
+import ClimbAddView from './sidebar/ClimbAddView';
+import {fsm} from './model/UIState';
 
+const SidebarContainer = observer(
+class SidebarContainer extends Component {
 
-const SidebarContainer = observer(({mainContent}) => {
-
-    const visible = store.uiState.event === UIState.SHOW_SIDEBAR;
-    const SidebarComponent = detailViewComponentFactory(store.uiState.target);
-
-    console.log("SidebarComp type: ", SidebarComponent);
-    return (
-        <Sidebar.Pushable as={Segment}>
-          <Sidebar as={Segment} animation='overlay' width='very wide' visible={visible} icon='labeled' vertical inverted>
-            <div style={{height:'90hv',  marginTop: '5em'}}>
-
-                <HideSidebarButton/>
-                {SidebarComponent !== null && <SidebarComponent />}
-            </div>
-          </Sidebar>
-          <Sidebar.Pusher>
-            {mainContent}
-          </Sidebar.Pusher>
-        </Sidebar.Pushable>
-    )
+    render() {
+        const visible =  this.props.uiState.sidebarDetailView.get().visible;
+        console.log("Sidebar visible", visible);
+        const event = this.props.uiState.sidebarDetailView.get();
+        console.log("Sidebar event", event);
+        const width = calcWidthFrom(event);
+        return (
+            <Sidebar.Pushable as={Segment} padded>
+                <Sidebar as={Segment} animation='overlay' width={width} visible={visible} vertical>
+                    <div style={{height:'90hv',  marginTop: '5em'}}>
+                        <HideSidebarButton/>
+                        {event.visible && <event.VIEW  {...event.props}/> }
+                    </div>
+                </Sidebar>
+                <Sidebar.Pusher>
+                    {this.props.mainContent}
+                </Sidebar.Pusher>
+            </Sidebar.Pushable>
+        )
+    }
 });
 
-
-function detailViewComponentFactory(ViewComponentInfo) {
-    return (class extends Component {
-        render() {
-            if (ViewComponentInfo !== undefined) {
-                const TYPE = ViewComponentInfo.type;
-                return <TYPE {...ViewComponentInfo.props} />;
-            }
-            return null;
-        }
-    });
+/**
+ * Conditionally determine sidebar width according to incominng view type
+ * @param  event 
+ */
+const calcWidthFrom = (event) => {
+    return  event.VIEW === BoundaryAddView ? 'very wide' : 'wide';
 }
 
 
 class HideSidebarButton extends Component {
 
     onClick = () => {
-        store.uiState.hideSidebar();
+        fsm.hideSidebar();
     }
 
     render() {
-        return (<Button onClick={this.onClick}>Close</Button>);
+        return (<Button basic compact size='small' floated='right' onClick={this.onClick}>Close</Button>);
     }
 }
 

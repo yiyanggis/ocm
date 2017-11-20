@@ -98,7 +98,7 @@ class SearchRadius extends Component {
 
     render() {
         return (
-            <div className="search-radius-component">
+            <div>
                 <OverlayTrigger ref={el => this.overlay = el} trigger="click" placement="bottom" overlay={this.searchRadiusPopover()}>
                     <Button bsStyle="link">
                         Within {Math.round(this.state.appliedRadius/1000)} km

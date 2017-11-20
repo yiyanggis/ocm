@@ -18,6 +18,7 @@ export default class Backend {
     constructor() {
         this.apiServer = CONFIG.api_server_url;
         this.apiKey = CONFIG.api_key;
+        this.overpass_url = CONFIG.overpass_url;
     }
 
     /**

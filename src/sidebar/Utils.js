@@ -7,6 +7,7 @@ export const flattenGeojson = (feature) => {
     const rels = p.relations || [];
     return {
         name: p.name || tags.name,
+        props: tags || p,
         osmType: p.type,
         rels:  rels.map(item => item.reltags.name)
     }

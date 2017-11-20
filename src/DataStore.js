@@ -19,7 +19,10 @@ export const UIState = {
     BOUNDARY_TEXT_EDIT_COMPLETED: "boundary-text-edit-completed",
 
     SHOW_SIDEBAR: "show-sidebar",
-    HIDE_SIDEBAR: "hide-sidebar"
+    HIDE_SIDEBAR: "hide-sidebar",
+
+    SHOW_POLYGON_EDITOR: "show-polygon-editor",
+    HIDE_POLYGON_EDITOR: "hide-polygon-editor"
 }
  
 
@@ -116,7 +119,16 @@ const state = {
             this.event = UIState.HIDE_SIDEBAR;
             this.target = target;
         }
-    ) 
+    ) ,
+
+    showPolygonTool: action(
+        UIState.SHOW_POLYGON_EDITOR, 
+        function(target) {
+            console.log('showPolygonTool() currentState: ', this.event);
+            this.event = UIState.SHOW_POLYGON_EDITOR;
+            this.target = target;
+        }
+    ),
 }
 
 
@@ -141,38 +153,29 @@ const defaultGEOJSONFeature = {
 }
 
 export class DataStore {
-    uiState = observable(state);
-    store = observable.map();
     backend = new Backend();
+
+    uiState = observable(state);
     
+    // user editable geometry data
+    drawingData = observable.map(); 
+    
+    // OpenStreetMap raw data
     osmData = observable.shallowArray([
         defaultGEOJSONFeature], 'Raw OSM data');
 
+    // climbing/boulder data from the backend
     routeData = observable.shallowArray([defaultGEOJSONFeature], 'OpenBeta route data');
+
+    // boundary data from the backend
     boundaryData = observable.shallowArray([defaultGEOJSONFeature], 'OpenBeta boundary data');
     
-
     constructor() {
         action(this.osmData.clear());
         action(this.routeData.clear());
     }
 
-    addObject(layer, type) {
-        console.log("addObject() id=%s, type=%s", layer._leaflet_id, type); 
-        this.store.set(layer._leaflet_id, new EditableObject(layer, type, null));
-    }
 
-
-    deleteObject(id) {
-        this.store.delete(id);
-    }
-
-
-    updateFeatureProps(id, props) {
-        const obj = this.store.get(id);
-        obj.props = props;
-        obj.layer.feature.properties = props;
-    }
 
 
     getFeature(id) {
@@ -247,8 +250,11 @@ export class DataStore {
                 console.log("Raw OSM data: ", data);                
             }
         }
-
-        osmQuery(q, action('Fetch OSM data', resultHandler), {flatProperties: false});        
+        const options = {
+            overpass_url: this.backend.overpass_url,
+            flatProperties: false
+        }
+        osmQuery(q, action('Fetch OSM data', resultHandler), options);        
     }
 }
 

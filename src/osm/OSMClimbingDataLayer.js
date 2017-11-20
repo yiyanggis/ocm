@@ -3,8 +3,9 @@ import {LayerGroup, CircleMarker, Tooltip} from 'react-leaflet';
 import {observer} from 'mobx-react';
 
 import {store} from './../DataStore';
-import {flattenGeojson} from '../detail-views/Utils';
-import OSMDetail from '../detail-views/OSMDetail';
+import {flattenGeojson} from '../sidebar/Utils';
+import OSMDetailView from '../sidebar/OSMDetailView';
+import {fsm, UIEvent} from '../model/UIState';
 
 
 const OSMClimbingDataLayer = observer(() => {
@@ -23,7 +24,8 @@ const OSMClimbingDataLayer = observer(() => {
 class OSMWorkerComponent extends Component {
 
     markerOnClick = (index) => {
-        store.uiState.showSidebar({type: OSMDetail, props: {dataIndex: index}});
+        const event = new UIEvent({VIEW: OSMDetailView, visible: true, props: {dataIndex: index}});
+        fsm.showDetailOnSidebar(event);
     }
 
     render() {
@@ -35,8 +37,9 @@ class OSMWorkerComponent extends Component {
             (feature, index) => {
                 const latlng = [feature.geometry.coordinates[1], feature.geometry.coordinates[0]];
                 const data = flattenGeojson(feature);
+                console.log('OSMWorkerComponent ', data);
                 return (
-                        <CircleMarker key={index} center={latlng}  color='#33ccff' weight='5' radius='20' 
+                        <CircleMarker key={index} center={latlng}  color='#33ccff' weight='5' radius={20} 
                                     onClick={()=>this.markerOnClick(index)}>
                             <Tooltip>
                                 <span>
@@ -46,12 +49,15 @@ class OSMWorkerComponent extends Component {
                                 </span>
                             </Tooltip>
                         </CircleMarker>
-                    )
+                    );
             }
         );
+        console.log('osmDataLayer ', dataLayer);
         return (
             <LayerGroup>
-                {dataLayer}
+                <div>
+                    {dataLayer}
+                </div>
             </LayerGroup>
         )
     }
