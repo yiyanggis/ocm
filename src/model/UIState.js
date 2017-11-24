@@ -12,7 +12,7 @@ export const fsm = new StateMachine({
     transitions: [
       { name: 'show_detail_on_sidebar', from: 'init',            to: 'sidebar_visible'},
       { name: 'show_detail_on_sidebar', from: 'sidebar_visible', to: 'sidebar_visible'},
-      { name: 'hide_sidebar',           from: 'sidebar_visible', to: 'init'},      
+      { name: 'hide_sidebar',           from: 'sidebar_visible', to: 'init'}
     ],
     methods: {
         onShowAddBoundary: function(target) { 

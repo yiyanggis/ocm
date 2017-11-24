@@ -50,6 +50,7 @@ export default class ReactApp extends Component {
             unit: 'metric',
             located: false
         }
+        this.mapRef = null;
     }
 
     componentDidMount = () => {
@@ -59,6 +60,7 @@ export default class ReactApp extends Component {
                 this.updateMapCenter({geocode: {center: [parseFloat(coords.longitude), parseFloat(coords.latitude)]}, radius: 50000})
             });
         }
+        this.forceUpdate();  // this is a hack to get 'mapRef' set to non-null
     }
 
 
@@ -82,21 +84,19 @@ export default class ReactApp extends Component {
         // Other components that accept Geojson will need to handle
         // the flipping as needed.
         const {center, bbox, ...theRest} = this.state;
-    const mainMap = (<MainMap center={lngLatFlip(center)} 
-                              bbox={bboxFlip(bbox)} 
-                              {...theRest} 
-                              ref={(mainMap)=>{this.mainMap = mainMap}}
-                              uiState={uiState}
-                              />);
+        const MainMapComp = (<MainMap   center={lngLatFlip(center)} 
+                                    bbox={bboxFlip(bbox)} 
+                                    {...theRest} 
+                                    ref={(mainMap)=>{this.mapRef = mainMap}}
+                                    uiState={uiState}
+                                    />);
         
         return (
             <div>
-                <TopNav mapRef={this.mainMap}>
+                <SidebarContainer uiState={uiState} mainContent={MainMapComp}/>
+                <TopNav mapRef={this.mapRef}>
                     <SearchBar initialSearch="" updateMapCenter={this.updateMapCenter}/>
                 </TopNav>
-                {/* <MyNavbar mapRef={this.mainMap}>
-                </MyNavbar> */}
-                <SidebarContainer uiState={uiState} mainContent={mainMap}/>
             </div>
     );} // render()
 }

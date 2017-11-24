@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
 import { LayerGroup, FeatureGroup, CircleMarker, Popup } from 'react-leaflet';
 import { observer } from 'mobx-react';
+import { Button } from 'semantic-ui-react'
 
+import {fsm, UIEvent} from '../model/UIState';
 import { drawingBuffer } from '../model/DrawingModel';
+import BoundaryEditView from '../sidebar/BoundaryEditView';
 
 
 /**
@@ -45,12 +48,19 @@ const ClickableHandle = ({id, latlng}) => (
     weight='3'
     fillColor='#a9cce3' 
     fillOpacity='1' 
-    radius={15} >
-        <Popup>
+    radius={15} 
+    onClick={()=>handleOnClick(id)}
+    >
+        {/* <Popup>
             <span>
                 <p>Area name: Some name...</p>
-                <p><button name="select">Select</button></p>
+                <p><Button>More...</Button></p>
             </span>
-        </Popup>
+        </Popup> */}
 </CircleMarker>
 )
+
+const handleOnClick = (layerId) => {
+    const event = new UIEvent({VIEW: BoundaryEditView, visible: true, props: {layerId: layerId}});
+    fsm.showDetailOnSidebar(event);
+}

@@ -2,8 +2,8 @@ import React from 'react';
 import { EditControl } from "react-leaflet-draw";
 import { FeatureGroup } from 'react-leaflet';
 
-import  { drawingBuffer } from '../model/DrawingModel'; 
-
+import { drawingBuffer } from '../model/DrawingModel'; 
+import { fsm } from '../model/UIState';
 
 
 const DrawingTool = () => {
@@ -66,6 +66,7 @@ const _onDeleted = (e) => {
             console.log('layer ', l);
             drawingBuffer.deleteObject(l._leaflet_id);
             });
+    fsm.hideSidebar();
 }
 
 

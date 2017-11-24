@@ -4,7 +4,7 @@ import { Sidebar, Segment, Button} from 'semantic-ui-react';
 
 import OSMDetailView from './sidebar/OSMDetailView';
 import ClimbDetailView from './sidebar/ClimbDetailView';
-import BoundaryAddView from './sidebar/BoundaryAddView';
+import BoundaryEditView from './sidebar/BoundaryEditView';
 import ClimbAddView from './sidebar/ClimbAddView';
 import {fsm} from './model/UIState';
 
@@ -12,14 +12,14 @@ const SidebarContainer = observer(
 class SidebarContainer extends Component {
 
     render() {
-        const visible =  this.props.uiState.sidebarDetailView.get().visible;
-        console.log("Sidebar visible", visible);
+        //const visible =  this.props.uiState.sidebarDetailView.get().visible;
+        //console.log("Sidebar visible", visible);
         const event = this.props.uiState.sidebarDetailView.get();
         console.log("Sidebar event", event);
         const width = calcWidthFrom(event);
         return (
             <Sidebar.Pushable as={Segment} padded>
-                <Sidebar as={Segment} animation='overlay' width={width} visible={visible} vertical>
+                <Sidebar as={Segment} animation='overlay' width={width} visible={event.visible} vertical>
                     <div style={{height:'90hv',  marginTop: '5em'}}>
                         <HideSidebarButton/>
                         {event.visible && <event.VIEW  {...event.props}/> }
@@ -38,7 +38,7 @@ class SidebarContainer extends Component {
  * @param  event 
  */
 const calcWidthFrom = (event) => {
-    return  event.VIEW === BoundaryAddView ? 'very wide' : 'wide';
+    return  event.VIEW === BoundaryEditView ? 'very wide' : 'wide';
 }
 
 
@@ -49,7 +49,11 @@ class HideSidebarButton extends Component {
     }
 
     render() {
-        return (<Button basic compact size='small' floated='right' onClick={this.onClick}>Close</Button>);
+        return (<Button 
+                    secondary 
+                    size='small' 
+                    floated='right' 
+                    onClick={this.onClick}>Hide</Button>);
     }
 }
 

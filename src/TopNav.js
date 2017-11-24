@@ -1,69 +1,32 @@
-import React from 'react'
+import React, { Component } from 'react'
 import {
     Menu,
     Container,
     Icon
 } from 'semantic-ui-react'
 
-import {store} from './DataStore'
-import {fsm, UIEvent} from './model/UIState'
+import { store } from './DataStore'
+import { fsm, UIEvent } from './model/UIState'
 
 import ClimbAddView from './sidebar/ClimbAddView';
-import BoundaryAddView from './sidebar/BoundaryAddView';
+import BoundaryAddTips from './sidebar/BoundaryAddTips';
 
 
-const TopNav = (props) => (
-    <Menu fixed='top'  borderless compact  icon='labeled' >
-        <Menu.Menu position='left'>
-            <Menu.Item>
-                {props.children}
-            </Menu.Item>
-          </Menu.Menu>
-          <Container>
-            <Menu.Item as='a' name='climb' leafletRef={props.mapRef} onClick={onClickHandler}>
-                <Icon size='massive' name='marker' color='teal' />
-                Add a Climb
-            </Menu.Item>
-            <Menu.Item as='a' name='area' leafletRef={props.mapRef} onClick={onClickHandler}>
-                <Icon size='massive' name='object group' color='teal'/>
-                Add an Area
-            </Menu.Item>
-            <Menu.Item as='a' name='osm' leafletRef={props.mapRef} onClick={onClickHandler}>
-                <Icon size='massive' name='globe' color='teal'
-                />
-                Get OSM Data
-            </Menu.Item>
-        </Container>
-    </Menu>
-  )
-
-  export default TopNav;
-
-const onClickHandler = (event, data) => {
-    const func = executorRefs[data.name];
-    if (func === undefined) {
-        console.log('##ERROR: unknown menu item ', data.name);
-    } else 
-        func(data); 
-}
-
-
-const osm = (data) => {
-    const zLevel = data.leafletRef.getCurrentZoomLevel();
+const osm = (data, mapRef) => {
+    console.log(data);
+    const zLevel = mapRef.getCurrentZoomLevel();
     if (zLevel < 11) {
         alert(`Current at zoom level ${zLevel}. Please zoom in to level 12 or higher.` );
     } else {
-        store.getOSMData(data.leafletRef.getBBox());
+        store.getOSMData(mapRef.getBBox());
     }
 }
 
 const area = (data) => {
-    console.log(data);
-    const event = new UIEvent({VIEW: BoundaryAddView, visible: true});
+    const event = new UIEvent({VIEW: BoundaryAddTips, visible: true});
     fsm.showDetailOnSidebar(event);}
 
 const climb = (data) => {
-    console.log(data);   
     const event = new UIEvent({VIEW: ClimbAddView, visible: true});
     fsm.showDetailOnSidebar(event);
 }
@@ -74,3 +37,42 @@ const executorRefs = {
     area: area,
     climb: climb
 }
+
+class TopNav extends Component {
+
+    onClickHandler = (event, data) => {
+        const func = executorRefs[data.name];
+        if (func === undefined) {
+            console.log('##ERROR: unknown menu item ', data.name);
+        } else 
+            func(data, this.props.mapRef); 
+    }
+
+    render() {
+        return (
+            <Menu fixed='top'  borderless compact  icon='labeled' >
+                <Menu.Menu position='left'>
+                    <Menu.Item>
+                        {this.props.children}
+                    </Menu.Item>
+                </Menu.Menu>
+                <Container>
+                    <Menu.Item as='a' name='climb' onClick={this.onClickHandler}>
+                        <Icon size='massive' name='marker' color='teal' />
+                        Add a Climb
+                    </Menu.Item>
+                    <Menu.Item as='a' name='area' onClick={this.onClickHandler}>
+                        <Icon size='massive' name='object group' color='teal'/>
+                        Add an Area
+                    </Menu.Item>
+                    <Menu.Item as='a' name='osm' data-mapRef={this.props.mapRef} onClick={this.onClickHandler}>
+                        <Icon size='massive' name='globe' color='teal'
+                        />
+                        Get OSM Data
+                    </Menu.Item>
+                </Container>
+            </Menu>);
+    }
+}
+
+export default TopNav;
