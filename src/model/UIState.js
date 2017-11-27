@@ -1,6 +1,8 @@
 import {useStrict, observable, action} from 'mobx';
 
 import ClimbDetailView from '../sidebar/ClimbDetailView';
+import AreaDetailView from '../sidebar/AreaDetailView';
+import AreaEditView from '../sidebar/AreaEditView';
 
 const StateMachine = require('javascript-state-machine');
 
@@ -12,13 +14,12 @@ export const fsm = new StateMachine({
     transitions: [
       { name: 'show_detail_on_sidebar', from: 'init',            to: 'sidebar_visible'},
       { name: 'show_detail_on_sidebar', from: 'sidebar_visible', to: 'sidebar_visible'},
-      { name: 'hide_sidebar',           from: 'sidebar_visible', to: 'init'}
+      { name: 'hide_sidebar',           from: 'sidebar_visible', to: 'init'},
     ],
     methods: {
-        onShowAddBoundary: function(target) { 
-            console.log('show_add_boundary');
-        },
         onShowDetailOnSidebar:   function(fsmEvent, userEvent) {
+            //const func = fn || (x => x); 
+            //const event = func.call(null, userEvent); // transform userEvent if needs be
             console.log('onShowDetailSidebar', fsmEvent, userEvent);
             uiState.update('sidebarDetailView', userEvent);
         },
@@ -37,6 +38,15 @@ export class UIEvent {
         this.visible = _opts.visible || false;
         this.props = _opts.props || {};
     }
+
+    static AreaDetailView(props) { 
+        return new UIEvent({VIEW: AreaDetailView, visible: true, props: props});
+    }
+
+    static AreaEditView(props) {
+        return new UIEvent({VIEW: AreaEditView, visible: true, props: props});
+    }
+
 }  
 
 class UIState {

@@ -168,7 +168,7 @@ export class DataStore {
     routeData = observable.shallowArray([defaultGEOJSONFeature], 'OpenBeta route data');
 
     // boundary data from the backend
-    boundaryData = observable.shallowArray([defaultGEOJSONFeature], 'OpenBeta boundary data');
+    boundaryData = observable.shallowArray([], 'OpenBeta boundary data');
     
     constructor() {
         action(this.osmData.clear());

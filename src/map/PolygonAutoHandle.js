@@ -1,32 +1,28 @@
-import React, { Component } from 'react';
-import { LayerGroup, FeatureGroup, CircleMarker, Popup } from 'react-leaflet';
+import React from 'react';
+import { LayerGroup, CircleMarker } from 'react-leaflet';
 import { observer } from 'mobx-react';
-import { Button } from 'semantic-ui-react'
 
 import {fsm, UIEvent} from '../model/UIState';
-import { drawingBuffer } from '../model/DrawingModel';
-import BoundaryEditView from '../sidebar/BoundaryEditView';
 
 
 /**
  * Observe changes to user drawing data structure.  When a new polygon
  * is added create a clickable circle handle using one of the polygon nodes.
  */
-const PolygonAutoHandle = observer(({data}) => {
+const PolygonAutoHandle = observer(({data, dataFn}) => {
+    dataFn = dataFn || (x => x);
+    console.log('PolygonAutoHandle', data);
     if (data === undefined) {
         return null;
     }
-   console.log('PolygonAutoHandle ', data);
-    const polygons = data.values().filter(v => v.type === 'polygon');
-    console.log("PolygonAutoHandle ", polygons);
-    if (polygons.length === 0) {
-        return null;
-    }
+
+    const polygonArray = dataFn(data);
+
     return (
         <LayerGroup>
             <div>
             {   
-                polygons.map(v =>
+                polygonArray.map(v =>
                    <ClickableHandle 
                         key={v.layer._leaflet_id} 
                         id={v.layer._leaflet_id}
@@ -61,6 +57,5 @@ const ClickableHandle = ({id, latlng}) => (
 )
 
 const handleOnClick = (layerId) => {
-    const event = new UIEvent({VIEW: BoundaryEditView, visible: true, props: {layerId: layerId}});
-    fsm.showDetailOnSidebar(event);
+    fsm.showDetailOnSidebar(UIEvent.AreaEditView({layerId: layerId}));
 }

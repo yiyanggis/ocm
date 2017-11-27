@@ -1,51 +1,38 @@
-import React, { Component } from 'react';
-import { observer } from 'mobx-react';
+import React, {Component} from 'react';
+import {observer} from 'mobx-react';
 
-import { store} from '../DataStore';
-import { drawingBuffer } from '../model/DrawingModel';
-import {
-    Card,
-    Grid,
-    Label,
-    Icon,
-    Button,
-    Divider,
-    Segment
-} from 'semantic-ui-react';
-import {
-    Form, 
-    Input,
-    TextArea,  
-    Radio,
-    Dropdown, 
-    Select
-} from 'formsy-semantic-ui-react';
+import {drawingBuffer} from '../model/DrawingModel';
+import {Card, Label, Divider} from 'semantic-ui-react';
+import {Form, Radio} from 'formsy-semantic-ui-react';
 
 
-const BoundaryEditView = ({layerId}) => {
+const AreaEditView = observer(({layerId}) => {
+    const geojson = drawingBuffer.data.get(layerId);
+    console.log('AreaEditView', geojson);
+    const initialValues = geojson && geojson.layer.toGeoJSON().properties;
+    console.log('AreaEditView', initialValues);
     return (
         <Card fluid>
             <Card.Content>
-                <Card.Header>Area Boundary - Edit (polygon id: { layerId })</Card.Header>
+                <Card.Header>Area Boundary - Edit (polygon id: {layerId})</Card.Header>
                     <Card.Description>
-                        <EntryForm layerId = { layerId }/>
+                        <EntryForm key={layerId} layerId={layerId} initialValues={initialValues}/>
                     </Card.Description>
             </Card.Content>
 
         </Card>
     );
-}
-export default BoundaryEditView  
-
-
+}, 'AreaEditView');
+export default AreaEditView  
 
 
 class EntryForm extends Component {
     constructor(props) {
         super(props);
+        console.log('EntryForm constructor')
         this.state = {
             canSubmit: false,
-            initialValues: drawingBuffer.getGeojson(this.props.layerId).properties
+            initialValues: this.props.initialValues
         }
         this.errorLabel = <Label color="red" pointing/>     
     }
@@ -57,7 +44,7 @@ class EntryForm extends Component {
             
             // For some reason changing initial states alone won't change checkbox 
              // so calling reset() directly 
-            this.formRef.reset({topLevel: newData.topLevel}); 
+            this.formRef && this.formRef.reset({topLevel: newData.topLevel}); 
             
             // trigger form pre-population if values exist in drawing buffer
             this.setState(() => ({

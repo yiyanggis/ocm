@@ -1,6 +1,6 @@
 import React from 'react';
 import L from 'leaflet';
-import {LayerGroup, Marker, Tooltip} from 'react-leaflet';
+import {LayerGroup} from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import {observer} from 'mobx-react';
 

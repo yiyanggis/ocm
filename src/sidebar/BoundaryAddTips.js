@@ -1,23 +1,6 @@
 import React from 'react';
 
-import {
-    Card,
-    Grid,
-    Label,
-    Icon,
-    Button,
-    Divider
-} from 'semantic-ui-react';
-import {
-    Form, 
-    Input,
-    TextArea, 
-    Checkbox, 
-    Radio,
-    RadioGroup, 
-    Dropdown, 
-    Select,
-  } from 'formsy-semantic-ui-react';
+import { Card } from 'semantic-ui-react';
 
 
 const BoundaryAddTips = () => {

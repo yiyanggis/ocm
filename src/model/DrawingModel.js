@@ -1,5 +1,7 @@
-import {observable, action} from 'mobx';
+import { observable, action } from 'mobx';
+import L from 'leaflet';
 
+import { store } from '../DataStore';
 
 const EMPTY_GEOJSON = {
     type: 'Feature',
@@ -26,6 +28,7 @@ export class EditableObject {
 class DrawingBuffer {
 
     data = observable.map();
+    clipboard = observable.box();
 
     /**
      * Add leaflet layer of type to the buffer
@@ -33,7 +36,7 @@ class DrawingBuffer {
      * @param {'point'|'polygon'} type 
      */
     addObject = action( (layer, type) => {
-        console.log("addObject() id=%s, type=%s", layer._leaflet_id); 
+        console.log("addObject()", layer); 
         this.data.set(layer._leaflet_id, new EditableObject(layer, type, {}));
     })
 
@@ -59,6 +62,24 @@ class DrawingBuffer {
         const obj = this.data.get(id);
         obj.layer.feature = obj.layer.toGeoJSON();
         this.data.set(id, obj);
+    })
+
+    polygonsFn = (data) => { 
+        return data.values().filter(v => v.type === 'polygon') 
+    }
+
+    activateAreaEdit = (roDataIndex) => {
+        const roArea = store.boundaryData[roDataIndex];
+        const coordinates = roArea.geometry.coordinates[0];
+        const pts = coordinates.map(p => [p[1], p[0]]);
+        const polygonLayer = new L.polygon(pts);
+        this.addObject(polygonLayer, 'polygon');
+        return polygonLayer._leaflet_id;
+    }
+
+    copyToClipboard = action((object) => {
+        console.log('copyToClipboard', object.toGeoJSON());        
+        this.clipboard.set(object);
     })
 }
 
