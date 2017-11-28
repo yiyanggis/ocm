@@ -1,5 +1,4 @@
 import 'whatwg-fetch';
-import {store} from './DataStore';
 
 
 const env = process.env.REACT_APP_ENV;
@@ -31,7 +30,7 @@ export default class Backend {
      * } 
      */
     load(options={okHandler: function(e) {}, errorHandler: function(e){}})  {
-        store.uiState.initiateDataLoad();
+        //store.uiState.initiateDataLoad();
 
         const latlng = options.center[0] + ',' + options.center[1];
         const radius = options.radius;
@@ -49,12 +48,12 @@ export default class Backend {
                 }
             })
             .then(function(json) {
-                store.uiState.completeDataLoad();
+                //store.uiState.completeDataLoad();
                 console.log("Raw data loaded from backend", json);
                 options.okHandler(json);
             })
             .catch(function(ex) {
-                store.uiState.completeDataLoad();
+                //store.uiState.completeDataLoad();
                 console.log('Backend.load() failed', ex)
                 options.errorHandler(ex);                
         });
