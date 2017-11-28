@@ -168,7 +168,7 @@ export class DataStore {
     routeData = observable.shallowArray([defaultGEOJSONFeature], 'OpenBeta route data');
 
     // boundary data from the backend
-    boundaryData = observable.shallowArray([defaultGEOJSONFeature], 'OpenBeta boundary data');
+    boundaryData = observable.shallowArray([], 'OpenBeta boundary data');
     
     constructor() {
         action(this.osmData.clear());
@@ -243,18 +243,18 @@ export class DataStore {
         const q = `[out:json];(${node};<;${way};<;);out;`;
         console.log('Overpass query: ', q);
 
-        const resultHandler = (error, data) => {
+        const resultHandler = action('Fetch OSM data', (error, data) => {
             console.log("OSM Error: ", error);
             if (!error && data.features !== undefined) {
                 this.osmData.replace(data.features);
                 console.log("Raw OSM data: ", data);                
             }
-        }
+        });
         const options = {
             overpass_url: this.backend.overpass_url,
             flatProperties: false
         }
-        osmQuery(q, action('Fetch OSM data', resultHandler), options);        
+        osmQuery(q, resultHandler, options);        
     }
 }
 
