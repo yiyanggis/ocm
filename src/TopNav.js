@@ -33,6 +33,27 @@ const TopNav = (props) => (
                 />
                 Get OSM Data
             </Menu.Item>
+
+            <Menu.Item as='a' name='light' leafletRef={props.mapRef} onClick={onClickHandler}>
+                <Icon size='massive' name='map outline' color='teal'
+                />
+                Light
+            </Menu.Item>
+            <Menu.Item as='a' name='night' leafletRef={props.mapRef} onClick={onClickHandler}>
+                <Icon size='massive' name='map' color='teal'
+                />
+                Night
+            </Menu.Item>
+            <Menu.Item as='a' name='topo' leafletRef={props.mapRef} onClick={onClickHandler}>
+                <Icon size='massive' name='map signs' color='teal'
+                />
+                Topo
+            </Menu.Item>
+            <Menu.Item as='a' name='sattelight' leafletRef={props.mapRef} onClick={onClickHandler}>
+                <Icon size='massive' name='map pin' color='teal'
+                />
+                Sattelight
+            </Menu.Item>
         </Container>
     </Menu>
   )
