@@ -94,7 +94,7 @@ export default class ReactApp extends Component {
         return (
             <div>
                 <SidebarContainer uiState={uiState} mainContent={MainMapComp}/>
-                <TopNav mapRef={this.mapRef}>
+                <TopNav lightactive={true} mapRef={this.mapRef}>
                     <SearchBar initialSearch="" updateMapCenter={this.updateMapCenter}/>
                 </TopNav>
             </div>

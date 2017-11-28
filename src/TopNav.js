@@ -30,62 +30,29 @@ const climb = (data) => {
     fsm.showDetailOnSidebar(event);
 }
 
-const toggleLayer = (layername, map) => {
-    removeLayer(map.lightLayer.leafletElement,map);
-    removeLayer(map.nightLayer.leafletElement,map);
-    removeLayer(map.outdoorsLayer.leafletElement,map);
-    removeLayer(map.satelliteLayer.leafletElement,map);
-    switch(layername){
-        case "light":
-            map.leafletRef.leafletElement.addLayer(map.lightLayer.leafletElement);
-            break;
-        case "night":
-            map.leafletRef.leafletElement.addLayer(map.nightLayer.leafletElement);
-            break;
-        case "topo":
-            map.leafletRef.leafletElement.addLayer(map.outdoorsLayer.leafletElement);
-            break;
-        case "satellite":
-            map.leafletRef.leafletElement.addLayer(map.satelliteLayer.leafletElement);
-            break;
-        
-    }
-}
-
-const removeLayer = (layer, map) => {
-    if(map.leafletRef.leafletElement.hasLayer(layer)){
-        map.leafletRef.leafletElement.removeLayer(layer)
-    }
-}
-
-const light = (data, map) => {
-    toggleLayer(data.name, map);
-}
-
-const night = (data, map) => {
-    toggleLayer(data.name, map);
-}
-
-const topo = (data, map) => {
-    toggleLayer(data.name, map);
-}
-
-const satellite = (data, map) => {
-    toggleLayer(data.name, map);
-}
-
 // avoid eval and use this look up table instead 
 const executorRefs = {
     osm: osm,
     area: area,
     climb: climb
-    ,light: light
-    ,night: night
-    ,topo: topo
-    ,satellite: satellite
+    //,light: light
+    //,night: night
+    //,topo: topo
+    //,satellite: satellite
 }
 
 class TopNav extends Component {
+
+    constructor(){
+        super();
+        this.state={
+            lightactive:true,
+            nightactive:false,
+            topoactive:false,
+            satelliteactive:false
+        }
+    }
+    
 
     onClickHandler = (event, data) => {
         const func = executorRefs[data.name];
@@ -93,6 +60,60 @@ class TopNav extends Component {
             console.log('##ERROR: unknown menu item ', data.name);
         } else 
             func(data, this.props.mapRef); 
+    }
+
+    toggleLayerHandler = (event, data) => {
+        let map=this.props.mapRef;
+        this.removeLayer(map.lightLayer.leafletElement,map);
+        this.removeLayer(map.nightLayer.leafletElement,map);
+        this.removeLayer(map.outdoorsLayer.leafletElement,map);
+        this.removeLayer(map.satelliteLayer.leafletElement,map);
+        switch(data.name){
+            case "light":
+                map.leafletRef.leafletElement.addLayer(map.lightLayer.leafletElement);
+                this.setState({
+                    lightactive:true,
+                    nightactive:false,
+                    topoactive:false,
+                    satelliteactive:false
+                })
+                break;
+            case "night":
+                map.leafletRef.leafletElement.addLayer(map.nightLayer.leafletElement);
+                this.setState({
+                    lightactive:false,
+                    nightactive:true,
+                    topoactive:false,
+                    satelliteactive:false
+                })
+                break;
+            case "topo":
+                map.leafletRef.leafletElement.addLayer(map.outdoorsLayer.leafletElement);
+                this.setState({
+                    lightactive:false,
+                    nightactive:false,
+                    topoactive:true,
+                    satelliteactive:false
+                })
+                break;
+            case "satellite":
+                map.leafletRef.leafletElement.addLayer(map.satelliteLayer.leafletElement);
+                this.setState({
+                    lightactive:false,
+                    nightactive:false,
+                    topoactive:false,
+                    satelliteactive:true
+                })
+                break;
+            
+        }
+
+    }
+
+    removeLayer = (layer, map) => {
+        if(map.leafletRef.leafletElement.hasLayer(layer)){
+            map.leafletRef.leafletElement.removeLayer(layer)
+        }
     }
 
     render() {
@@ -119,22 +140,22 @@ class TopNav extends Component {
                     </Menu.Item>
                 </Container>
                 <Container id='rightMenu'>
-                    <Menu.Item as='a' name='light' data-mapRef={this.props.mapRef} onClick={this.onClickHandler}>
+                    <Menu.Item as='a' name='light' active={this.state.lightactive} data-mapRef={this.props.mapRef} onClick={this.toggleLayerHandler}>
                         <Icon size='massive' name='map outline' color='teal'
                         />
                         Light
                     </Menu.Item>
-                    <Menu.Item as='a' name='night' data-mapRef={this.props.mapRef} onClick={this.onClickHandler}>
+                    <Menu.Item as='a' name='night' active={this.state.nightactive} data-mapRef={this.props.mapRef} onClick={this.toggleLayerHandler}>
                         <Icon size='massive' name='map' color='teal'
                         />
                         Night
                     </Menu.Item>
-                    <Menu.Item as='a' name='topo' data-mapRef={this.props.mapRef} onClick={this.onClickHandler}>
+                    <Menu.Item as='a' name='topo' active={this.state.topoactive} data-mapRef={this.props.mapRef} onClick={this.toggleLayerHandler}>
                         <Icon size='massive' name='map signs' color='teal'
                         />
                         Topo
                     </Menu.Item>
-                    <Menu.Item as='a' name='satellite' data-mapRef={this.props.mapRef} onClick={this.onClickHandler}>
+                    <Menu.Item as='a' name='satellite' active={this.state.satelliteactive} data-mapRef={this.props.mapRef} onClick={this.toggleLayerHandler}>
                         <Icon size='massive' name='map pin' color='teal'
                         />
                         Sattelight
