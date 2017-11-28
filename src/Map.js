@@ -71,7 +71,7 @@ export default class MainMap extends Component {
                 bounds={this.props.bbox}
                 zoom={this.state.zoom} 
                 zoomControl={false}
-                maxZoom={24}
+                maxZoom={25}
                 onZoomEnd={(e) =>
                     this.setState({zoom: e.target._zoom})} 
                 ref={ref=>this.leafletRef=ref}>
@@ -84,7 +84,7 @@ export default class MainMap extends Component {
                           attribution={mapboxAttribution}
                           url={mapboxUrl}
                           id='mapbox.satellite'
-                          maxZoom='23'
+                          maxZoom='25'
                           ref={ref=>this.satelliteLayer=ref}
                           />
                     </LayersControl.BaseLayer>
@@ -93,6 +93,7 @@ export default class MainMap extends Component {
                           attribution={mapboxAttribution}
                           url={mapboxUrl}
                           id='mapbox.dark'
+                          maxZoom='25'                          
                           ref={ref=>this.nightLayer=ref}
                           />
                     </LayersControl.BaseLayer>
@@ -101,6 +102,7 @@ export default class MainMap extends Component {
                           attribution={mapboxAttribution}
                           url={mapboxUrl}
                           id='mapbox.outdoors'
+                          maxZoom='25'                          
                           ref={ref=>this.outdoorsLayer=ref}
                           />
                     </LayersControl.BaseLayer>
@@ -109,6 +111,7 @@ export default class MainMap extends Component {
                           attribution={mapboxAttribution}
                           url={mapboxUrl}
                           id='mapbox.light'
+                          maxZoom='25'                          
                           ref={ref=>this.lightLayer=ref}
                           />
                     </LayersControl.BaseLayer>

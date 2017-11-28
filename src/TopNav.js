@@ -1,12 +1,8 @@
-import React, { Component } from 'react'
-import {
-    Menu,
-    Container,
-    Icon
-} from 'semantic-ui-react'
+import React, {Component} from 'react'
+import {Menu, Container, Icon, Segment} from 'semantic-ui-react'
 
-import { store } from './DataStore'
-import { fsm, UIEvent } from './model/UIState'
+import {store} from './DataStore'
+import {fsm, UIEvent} from './model/UIState'
 
 import ClimbAddView from './sidebar/ClimbAddView';
 import BoundaryAddTips from './sidebar/BoundaryAddTips';
@@ -35,10 +31,6 @@ const executorRefs = {
     osm: osm,
     area: area,
     climb: climb
-    //,light: light
-    //,night: night
-    //,topo: topo
-    //,satellite: satellite
 }
 
 class TopNav extends Component {
@@ -68,6 +60,9 @@ class TopNav extends Component {
         this.removeLayer(map.nightLayer.leafletElement,map);
         this.removeLayer(map.outdoorsLayer.leafletElement,map);
         this.removeLayer(map.satelliteLayer.leafletElement,map);
+
+        //TODO use dictionary or Radio button group to 
+        // eliminate this long switch statement
         switch(data.name){
             case "light":
                 map.leafletRef.leafletElement.addLayer(map.lightLayer.leafletElement);
@@ -105,6 +100,8 @@ class TopNav extends Component {
                     satelliteactive:true
                 })
                 break;
+            default:
+                console.log('Wrong layer name', data.name);
             
         }
 
@@ -140,26 +137,28 @@ class TopNav extends Component {
                     </Menu.Item>
                 </Container>
                 <Container id='rightMenu'>
-                    <Menu.Item as='a' name='light' active={this.state.lightactive} data-mapRef={this.props.mapRef} onClick={this.toggleLayerHandler}>
-                        <Icon size='massive' name='map outline' color='teal'
-                        />
-                        Light
-                    </Menu.Item>
-                    <Menu.Item as='a' name='night' active={this.state.nightactive} data-mapRef={this.props.mapRef} onClick={this.toggleLayerHandler}>
-                        <Icon size='massive' name='map' color='teal'
-                        />
-                        Night
-                    </Menu.Item>
-                    <Menu.Item as='a' name='topo' active={this.state.topoactive} data-mapRef={this.props.mapRef} onClick={this.toggleLayerHandler}>
-                        <Icon size='massive' name='map signs' color='teal'
-                        />
-                        Topo
-                    </Menu.Item>
-                    <Menu.Item as='a' name='satellite' active={this.state.satelliteactive} data-mapRef={this.props.mapRef} onClick={this.toggleLayerHandler}>
-                        <Icon size='massive' name='map pin' color='teal'
-                        />
-                        Sattelight
-                    </Menu.Item>
+                    <Segment.Group horizontal={true} raised>
+                        <Menu.Item as='a' name='light' active={this.state.lightactive} data-mapRef={this.props.mapRef} onClick={this.toggleLayerHandler}>
+                            <Icon size='massive' name='sun' color='yellow'
+                            />
+                            Light
+                        </Menu.Item>
+                        <Menu.Item as='a' name='night' active={this.state.nightactive} data-mapRef={this.props.mapRef} onClick={this.toggleLayerHandler}>
+                            <Icon size='massive' name='moon' color='blue'
+                            />
+                            Night
+                        </Menu.Item>
+                        <Menu.Item as='a' name='topo' active={this.state.topoactive} data-mapRef={this.props.mapRef} onClick={this.toggleLayerHandler}>
+                            <Icon size='massive' name='map outline' color='green'
+                            />
+                            Topo
+                        </Menu.Item>
+                        <Menu.Item as='a' name='satellite' active={this.state.satelliteactive} data-mapRef={this.props.mapRef} onClick={this.toggleLayerHandler}>
+                            <Icon size='massive' name='space shuttle' color='grey'
+                            />
+                            Satellite
+                        </Menu.Item>
+                    </Segment.Group>
                 </Container>
             </Menu>);
     }
