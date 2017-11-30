@@ -19,6 +19,7 @@ const ClimbMarkerCluster = observer(() => {
         const markers = jsonData.map(geojsonPoint2Marker);
 
         console.log('markers ', markers)
+
         return (
                 <LayerGroup>
                     <MarkerClusterGroup
@@ -32,7 +33,6 @@ const ClimbMarkerCluster = observer(() => {
                 );
     }
 );
-
 
 const onMarkerClickHandler = (marker) => {
    const event = new UIEvent({VIEW: ClimbDetailView, visible: true, props: {dataIndex: marker.options.dataIndex}});

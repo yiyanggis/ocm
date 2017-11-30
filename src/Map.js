@@ -37,7 +37,8 @@ export default class MainMap extends Component {
           zoom: 3,
           routeData: [],
           boundaryData: [1],
-          leafletRef: null
+          leafletRef: null,
+          extent:this.props.bbox
         };
     }
 
@@ -63,6 +64,33 @@ export default class MainMap extends Component {
         return this.state.leafletRef.getZoom();
     }
 
+    checkSearch = (viewport) => {
+        console.log(viewport);
+        //previous extent
+        let newExtent=this.getBBox();
+        let center=this.props.center;
+        if(this.isWithin(center,newExtent)){
+          //no need to search again
+          console.log("no need to update search");
+          this.props.noNeedSearch();
+        }
+        else{
+          //search again
+          //
+          console.log("need to update search");
+          this.setState({
+            lat:(newExtent[0]+newExtent[2])/2,
+            lng:(newExtent[1]+newExtent[3])/2
+          })
+          this.props.needSearch();
+        }
+
+    }
+
+    isWithin = (pt,extent) => {
+        return (pt[0]<=extent[2]&&pt[0]>=extent[0]&&pt[1]<=extent[3]&&pt[1]>=extent[1])
+    }
+
     render() {
         return (
             <Map 
@@ -74,6 +102,7 @@ export default class MainMap extends Component {
                 maxZoom={25}
                 onZoomEnd={(e) =>
                     this.setState({zoom: e.target._zoom})} 
+                onViewportChanged={(viewport) => {this.checkSearch(viewport)}} 
                 ref={ref=>this.leafletRef=ref}>
 
                 <ZoomControl position='bottomright' />
@@ -119,7 +148,7 @@ export default class MainMap extends Component {
                     <Radar zoomLevel={this.state.zoom} center={this.props.center} radius={this.props.radius} />         
                 
                     <LayersControl.Overlay checked name='Routes'>
-                        <ClimbMarkerCluster />
+                        <ClimbMarkerCluster ref={ref=>this.climbMarkerCluster=ref}  />
                     </LayersControl.Overlay>
                     <LayersControl.Overlay checked name='Areas'>
                         <BoundaryLayer />

@@ -57,3 +57,11 @@ body {
 #rightMenu {
     float: right;
 }
+
+.display{
+    display:block;
+}
+
+.hide {
+    display:none;
+}

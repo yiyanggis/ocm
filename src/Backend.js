@@ -4,7 +4,7 @@ import 'whatwg-fetch';
 const env = process.env.REACT_APP_ENV;
 var envModule;
 if (env === undefined) {
-    envModule = 'dev';
+    envModule = 'prod';//dev test
 } else {
     envModule = env;
 }

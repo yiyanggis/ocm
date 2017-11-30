@@ -41,7 +41,7 @@ class TopNav extends Component {
             lightactive:true,
             nightactive:false,
             topoactive:false,
-            satelliteactive:false
+            satelliteactive:false,
         }
     }
     
@@ -114,6 +114,14 @@ class TopNav extends Component {
     }
 
     render() {
+        let searchBtn=null;
+        if(this.props.needSearch){
+            searchBtn=<Menu.Item id='searchBtn' as='a' name="search" data-mapRef={this.props.mapRef} onClick={()=>{this.props.redoSearch(this.props.mapRef.state.lat,this.props.mapRef.state.lng, store.radius)}}>
+                <Icon size='massive' name='search' color='teal'
+                />
+                Search
+            </Menu.Item>
+        }
         return (
             <Menu fixed='top'  borderless compact  icon='labeled' >
                 <Menu.Menu position='left'>
@@ -135,6 +143,8 @@ class TopNav extends Component {
                         />
                         Get OSM Data
                     </Menu.Item>
+                    {searchBtn}
+                    
                 </Container>
                 <Container id='rightMenu'>
                     <Segment.Group horizontal={true} raised>

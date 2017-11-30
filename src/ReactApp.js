@@ -48,9 +48,11 @@ export default class ReactApp extends Component {
                 msg: ''
             },
             unit: 'metric',
-            located: false
+            located: false,
+            needSearch:false
         }
         this.mapRef = null;
+        this.redoSearch = this.redoSearch.bind(this);
     }
 
     componentDidMount = () => {
@@ -76,6 +78,31 @@ export default class ReactApp extends Component {
         });
     }
 
+    redoSearch = (lat, lng, radius) => {
+        let center=[lng,lat]
+        store.loadFromBackend({center: center, radius: this.searchBar.state.radius});
+        let bbox = makeBBox(center, this.searchBar.state.radius);
+        this.setState({
+            center: center,
+            bbox: bbox,
+            radius: this.searchBar.state.radius
+        });
+    }
+
+    needSearch = () => {
+        //if(store.routeData[0]!=null){
+        console.log("add back search button")
+        this.setState({needSearch:true})
+        //}
+    }
+
+    noNeedSearch = () => {
+        //if(store.routeData[0]!=null){
+        console.log("hide search button")
+        this.setState({needSearch:false})
+        //}
+    }
+
 
     render() {
         // Important: Leaflet expects [Lat,Lng] 
@@ -89,13 +116,15 @@ export default class ReactApp extends Component {
                                     {...theRest} 
                                     ref={(mainMap)=>{this.mapRef = mainMap}}
                                     uiState={uiState}
+                                    needSearch={this.needSearch}
+                                    noNeedSearch={this.noNeedSearch}
                                     />);
         
         return (
             <div>
                 <SidebarContainer uiState={uiState} mainContent={MainMapComp}/>
-                <TopNav lightactive={true} mapRef={this.mapRef}>
-                    <SearchBar initialSearch="" updateMapCenter={this.updateMapCenter}/>
+                <TopNav needSearch={this.state.needSearch} redoSearch={this.redoSearch}  lightactive={true} mapRef={this.mapRef}>
+                    <SearchBar ref={ref=>this.searchBar=ref} initialSearch="" updateMapCenter={this.updateMapCenter}/>
                 </TopNav>
             </div>
     );} // render()
