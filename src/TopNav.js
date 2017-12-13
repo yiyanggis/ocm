@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {Menu, Container, Icon, Segment} from 'semantic-ui-react'
+import {Menu, Container, Icon, Segment, Portal, Button} from 'semantic-ui-react'
 
 import {store} from './DataStore'
 import {fsm, UIEvent} from './model/UIState'
@@ -32,6 +32,8 @@ const executorRefs = {
     area: area,
     climb: climb
 }
+
+const open=true;
 
 class TopNav extends Component {
 
@@ -116,11 +118,32 @@ class TopNav extends Component {
     render() {
         let searchBtn=null;
         if(this.props.needSearch){
-            searchBtn=<Menu.Item id='searchBtn' as='a' name="search" data-mapRef={this.props.mapRef} onClick={()=>{this.props.redoSearch(this.props.mapRef.state.lat,this.props.mapRef.state.lng, store.radius)}}>
-                <Icon size='massive' name='search' color='teal'
-                />
-                Search
-            </Menu.Item>
+            searchBtn=
+            <Portal
+                open={this.props.needSearch}
+                closeOnTriggerClick
+                openOnTriggerClick
+                trigger={(
+                  <Button
+                    ref={btn=>this.popupSearch=btn}
+                    style={{display:'none'}}
+                    content={open ? 'Close Portal' : 'Open Portal'}
+                    negative={open}
+                    positive={!open}
+                  />
+                )}
+                onOpen={this.handleOpen}
+                onClose={this.handleClose}
+            >
+                <Segment style={{cursor: 'pointer', left: '45%', position: 'fixed', top: '120px', zIndex: 1000 }}>
+                    <Menu.Item id='searchBtn' as='a' name="search" data-mapRef={this.props.mapRef} onClick={()=>{this.props.redoSearch(this.props.mapRef.state.lat,this.props.mapRef.state.lng, store.radius)}}>
+                        <Icon name='search' color='teal'
+                        />
+                        Search
+                    </Menu.Item>
+                </Segment>
+            </Portal>
+            
         }
         return (
             <Menu fixed='top'  borderless compact  icon='labeled' >
