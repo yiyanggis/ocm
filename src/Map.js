@@ -9,6 +9,8 @@ import OSMClimbingDataLayer from './osm/OSMClimbingDataLayer';
 import ClimbMarkerCluster from './map/ClimbMarkerCluster';
 import BoundaryLayer from './map/BoundaryLayer';
 
+import SearchBtn from './SearchBtn';
+
 
 const mapboxAttribution = 'Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, ' +
         'Imagery © <a href="http://mapbox.com">Mapbox</a>';
@@ -38,7 +40,8 @@ export default class MainMap extends Component {
           routeData: [],
           boundaryData: [1],
           leafletRef: null,
-          extent:this.props.bbox
+          extent:this.props.bbox,
+          showSearchBtn:this.props.showSearchBtn
         };
     }
 
@@ -73,6 +76,7 @@ export default class MainMap extends Component {
           //no need to search again
           console.log("no need to update search");
           this.props.noNeedSearch();
+          //hide search button
         }
         else{
           //search again
@@ -83,6 +87,7 @@ export default class MainMap extends Component {
             lng:(newExtent[1]+newExtent[3])/2
           })
           this.props.needSearch();
+          //show search button
         }
 
     }
@@ -163,6 +168,8 @@ export default class MainMap extends Component {
                         </LayerGroup>
                     </LayersControl.Overlay>
                 </LayersControl>
+
+                <SearchBtn needSearch={this.props.showSearchBtn} redoSearch={this.props.redoSearch} mapRef={this}/>
 
               </Map>
             );

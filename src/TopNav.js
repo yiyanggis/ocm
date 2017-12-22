@@ -166,7 +166,7 @@ class TopNav extends Component {
                         />
                         Get OSM Data
                     </Menu.Item>
-                    {searchBtn}
+                    
                     
                 </Container>
                 <Container id='rightMenu'>

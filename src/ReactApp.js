@@ -117,7 +117,9 @@ export default class ReactApp extends Component {
                                     ref={(mainMap)=>{this.mapRef = mainMap}}
                                     uiState={uiState}
                                     needSearch={this.needSearch}
+                                    showSearchBtn={this.state.needSearch}
                                     noNeedSearch={this.noNeedSearch}
+                                    redoSearch={this.redoSearch}
                                     />);
         
         return (
